@@ -23,9 +23,8 @@ import baritone.api.utils.Helper;
 import baritone.utils.ToolSet;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
@@ -92,7 +91,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         // we're using 0 and 8 for pickaxe and throwaway
         ArrayList<Integer> candidates = new ArrayList<>();
         for (int i = 1; i < 8; i++) {
-            if (ctx.player().getInventory().items.get(i).isEmpty() && !disallowedHotbar.test(i)) {
+            if (ctx.player().getInventory().getItem(i).isEmpty() && !disallowedHotbar.test(i)) {
                 candidates.add(i);
             }
         }
@@ -119,16 +118,16 @@ public final class InventoryBehavior extends Behavior implements Helper {
             logDebug("Inventory move requested but delaying until stationary");
             return false;
         }
-        ctx.playerController().windowClick(ctx.player().inventoryMenu.containerId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickType.SWAP, ctx.player());
+        ctx.playerController().windowClick(ctx.player().inventoryMenu.containerId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickAction.SWAP, ctx.player());
         ticksSinceLastInventoryMove = 0;
         lastTickRequestedMove = null;
         return true;
     }
 
     private int firstValidThrowaway() { // TODO offhand idk
-        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
-        for (int i = 0; i < invy.size(); i++) {
-            if (Baritone.settings().acceptableThrowawayItems.value.contains(invy.get(i).getItem())) {
+        var inv = ctx.player().getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (Baritone.settings().acceptableThrowawayItems.value.contains(inv.getItem(i).getItem())) {
                 return i;
             }
         }
@@ -136,11 +135,11 @@ public final class InventoryBehavior extends Behavior implements Helper {
     }
 
     private int bestToolAgainst(Block against, Class<? extends DiggerItem> cla$$) {
-        NonNullList<ItemStack> invy = ctx.player().getInventory().items;
         int bestInd = -1;
         double bestSpeed = -1;
-        for (int i = 0; i < invy.size(); i++) {
-            ItemStack stack = invy.get(i);
+        var inv = ctx.player().getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) {
                 continue;
             }
@@ -148,7 +147,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                 continue;
             }
             if (cla$$.isInstance(stack.getItem())) {
-                double speed = ToolSet.calculateSpeedVsBlock(stack, against.defaultBlockState()); // takes into account enchants
+                double speed = ToolSet.calculateSpeedVsBlock(stack, against.defaultBlockState(), ctx.player().level().registryAccess()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
                     bestInd = i;
@@ -189,9 +188,9 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
     public boolean throwaway(boolean select, Predicate<? super ItemStack> desired, boolean allowInventory) {
         LocalPlayer p = ctx.player();
-        NonNullList<ItemStack> inv = p.getInventory().items;
+        var inv = p.getInventory();
         for (int i = 0; i < 9; i++) {
-            ItemStack item = inv.get(i);
+            ItemStack item = inv.getItem(i);
             // this usage of settings() is okay because it's only called once during pathing
             // (while creating the CalculationContext at the very beginning)
             // and then it's called during execution
@@ -199,22 +198,22 @@ public final class InventoryBehavior extends Behavior implements Helper {
             // acceptableThrowawayItems to the CalculationContext
             if (desired.test(item)) {
                 if (select) {
-                    p.getInventory().selected = i;
+                    inv.setSelectedSlot(i);
                 }
                 return true;
             }
         }
-        if (desired.test(p.getInventory().offhand.get(0))) {
+        if (desired.test(inv.getOffhand().get(0))) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
             // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
             // so we need to select in the main hand something that doesn't right click
             // so not a shovel, not a hoe, not a block, etc
             for (int i = 0; i < 9; i++) {
-                ItemStack item = inv.get(i);
+                ItemStack item = inv.getItem(i);
                 if (item.isEmpty() || item.getItem() instanceof PickaxeItem) {
                     if (select) {
-                        p.getInventory().selected = i;
+                        inv.setSelectedSlot(i);
                     }
                     return true;
                 }
@@ -223,10 +222,10 @@ public final class InventoryBehavior extends Behavior implements Helper {
 
         if (allowInventory) {
             for (int i = 9; i < 36; i++) {
-                if (desired.test(inv.get(i))) {
+                if (desired.test(inv.getItem(i))) {
                     if (select) {
                         requestSwapWithHotBar(i, 7);
-                        p.getInventory().selected = 7;
+                        inv.setSelectedSlot(7);
                     }
                     return true;
                 }

@@ -38,7 +38,7 @@ allprojects {
         println "Detected version " + version
     }
     group = rootProject.maven_group
-    
+
     java {
         sourceCompatibility = JavaVersion.toVersion(project.java_version)
         toolchain {
@@ -89,9 +89,7 @@ allprojects {
         version rootProject.minecraft_version
 
         mappings {
-            intermediary()
             mojmap()
-            parchment("2023.06.26")
         }
     }
 

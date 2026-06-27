@@ -23,10 +23,10 @@ plugins {
     id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
-unimined.minecraft {
-    runs.client = {
-        mainClass = "net.minecraft.launchwrapper.Launch"
-        args.addAll(["--tweakClass", "baritone.launch.tweaker.BaritoneTweaker"])
+unimined.minecraft(sourceSets.main, true) {
+    version rootProject.minecraft_version
+    mappings {
+        mojmap()
     }
 }
 
@@ -71,27 +71,23 @@ shadowJar {
 }
 
 
-remapJar {
-    inputFile.set shadowJar.archiveFile
+jar {
     dependsOn shadowJar
     archiveClassifier.set null
-}
-
-jar {
-    archiveClassifier.set "dev"
-
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-
     manifest {
         attributes(
                 'MixinConfigs': 'mixins.baritone.json',
                 "MixinConnector": "baritone.launch.BaritoneMixinConnector",
-
                 'Implementation-Title': 'Baritone',
                 'Implementation-Version': version,
         )
     }
+}
+
+task devJar(type: Jar) {
+    archiveClassifier.set "dev"
 }
 
 task proguard(type: ProguardTask) {

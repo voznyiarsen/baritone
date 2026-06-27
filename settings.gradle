@@ -41,7 +41,9 @@ pluginManagement {
 
 rootProject.name = 'baritone'
 
-include("tweaker")
+if (System.getProperty("baritone.enabled_tweaker") != null) {
+    include("tweaker")
+}
 if (System.getProperty("Baritone.enabled_platforms") == null) {
     System.setProperty("Baritone.enabled_platforms", "fabric,forge")
 }

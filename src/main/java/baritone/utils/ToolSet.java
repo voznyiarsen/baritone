@@ -19,11 +19,14 @@ package baritone.utils;
 
 import baritone.Baritone;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
@@ -85,16 +88,19 @@ public class ToolSet {
      * @return values from 0 up
      */
     private int getMaterialCost(ItemStack itemStack) {
-        if (itemStack.getItem() instanceof TieredItem) {
-            TieredItem tool = (TieredItem) itemStack.getItem();
-            return tool.getTier().getLevel();
-        } else {
-            return -1;
+        // TieredItem was removed in 1.21.4; use Tool component instead
+        var tool = itemStack.get(net.minecraft.core.component.DataComponents.TOOL);
+        if (tool != null) {
+            // Use damagePerBlock as a proxy for tier level
+            return tool.damagePerBlock();
         }
+        return -1;
     }
 
     public boolean hasSilkTouch(ItemStack stack) {
-        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0;
+        Registry<Enchantment> reg = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Holder<Enchantment> silkTouch = reg.getHolder(Enchantments.SILK_TOUCH).orElse(null);
+        return silkTouch != null && EnchantmentHelper.getItemEnchantmentLevel(silkTouch, stack) > 0;
     }
 
     /**
@@ -116,7 +122,7 @@ public class ToolSet {
         possible, this lets us make pathing depend on the actual tool to be used (if auto tool is disabled)
         */
         if (!Baritone.settings().autoTool.value && pathingCalculation) {
-            return player.getInventory().selected;
+            return player.getInventory().getSelectedSlot();
         }
 
         int best = 0;
@@ -133,7 +139,7 @@ public class ToolSet {
             if (Baritone.settings().itemSaver.value && (itemStack.getDamageValue() + Baritone.settings().itemSaverThreshold.value) >= itemStack.getMaxDamage() && itemStack.getMaxDamage() > 1) {
                 continue;
             }
-            double speed = calculateSpeedVsBlock(itemStack, blockState);
+            double speed = calculateSpeedVsBlock(itemStack, blockState, player.level().registryAccess());
             boolean silkTouch = hasSilkTouch(itemStack);
             if (speed > highestSpeed) {
                 highestSpeed = speed;
@@ -162,7 +168,7 @@ public class ToolSet {
      */
     private double getBestDestructionTime(Block b) {
         ItemStack stack = player.getInventory().getItem(getBestSlot(b, false, true));
-        return calculateSpeedVsBlock(stack, b.defaultBlockState()) * avoidanceMultiplier(b);
+        return calculateSpeedVsBlock(stack, b.defaultBlockState(), player.level().registryAccess()) * avoidanceMultiplier(b);
     }
 
     private double avoidanceMultiplier(Block b) {
@@ -177,7 +183,7 @@ public class ToolSet {
      * @param state the blockstate to be mined
      * @return how long it would take in ticks
      */
-    public static double calculateSpeedVsBlock(ItemStack item, BlockState state) {
+    public static double calculateSpeedVsBlock(ItemStack item, BlockState state, RegistryAccess registryAccess) {
         float hardness;
         try {
             hardness = state.getDestroySpeed(null, null);
@@ -191,9 +197,13 @@ public class ToolSet {
 
         float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            int effLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, item);
-            if (effLevel > 0 && !item.isEmpty()) {
-                speed += effLevel * effLevel + 1;
+            Registry<Enchantment> reg = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+            Holder<Enchantment> efficiency = reg.getHolder(Enchantments.EFFICIENCY).orElse(null);
+            if (efficiency != null && !item.isEmpty()) {
+                int effLevel = EnchantmentHelper.getItemEnchantmentLevel(efficiency, item);
+                if (effLevel > 0) {
+                    speed += effLevel * effLevel + 1;
+                }
             }
         }
 
@@ -212,11 +222,12 @@ public class ToolSet {
      */
     private double potionAmplifier() {
         double speed = 1;
-        if (player.hasEffect(MobEffects.DIG_SPEED)) {
-            speed *= 1 + (player.getEffect(MobEffects.DIG_SPEED).getAmplifier() + 1) * 0.2;
+        if (player.hasEffect(MobEffects.HASTE)) {
+            speed *= 1 + (player.getEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2;
         }
-        if (player.hasEffect(MobEffects.DIG_SLOWDOWN)) {
-            switch (player.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) {
+        if (player.hasEffect(MobEffects.MINING_FATIGUE)) {
+            int amplifier = player.getEffect(MobEffects.MINING_FATIGUE).getAmplifier();
+            switch (amplifier) {
                 case 0:
                     speed *= 0.3;
                     break;

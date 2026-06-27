@@ -87,7 +87,7 @@ public class FollowCommand extends Command {
                 classes.stream()
                         .map(BuiltInRegistries.ENTITY_TYPE::getKey)
                         .map(Objects::requireNonNull)
-                        .map(ResourceLocation::toString)
+                        .map(Object::toString)
                         .forEach(this::logDirect);
             }
         }

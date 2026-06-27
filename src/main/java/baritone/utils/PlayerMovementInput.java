@@ -19,7 +19,7 @@ package baritone.utils;
 
 import baritone.api.utils.input.Input;
 
-public class PlayerMovementInput extends net.minecraft.client.player.Input {
+public class PlayerMovementInput extends net.minecraft.client.player.ClientInput {
 
     private final InputOverrideHandler handler;
 
@@ -28,31 +28,35 @@ public class PlayerMovementInput extends net.minecraft.client.player.Input {
     }
 
     @Override
-    public void tick(boolean p_225607_1_, float f) {
-        this.leftImpulse = 0.0F;
-        this.forwardImpulse = 0.0F;
+    public void tick() {
+        this.keyPresses = new net.minecraft.world.entity.player.Input(
+            handler.isInputForcedDown(Input.JUMP),
+            handler.isInputForcedDown(Input.MOVE_FORWARD),
+            handler.isInputForcedDown(Input.MOVE_BACK),
+            handler.isInputForcedDown(Input.MOVE_LEFT),
+            handler.isInputForcedDown(Input.MOVE_RIGHT),
+            handler.isInputForcedDown(Input.SNEAK),
+            false
+        );
+        float forwardImpulse = 0.0F;
+        float leftImpulse = 0.0F;
 
-        this.jumping = handler.isInputForcedDown(Input.JUMP); // oppa gangnam style
-
-        if (this.up = handler.isInputForcedDown(Input.MOVE_FORWARD)) {
-            this.forwardImpulse++;
+        if (this.keyPresses.forward()) {
+            forwardImpulse++;
         }
-
-        if (this.down = handler.isInputForcedDown(Input.MOVE_BACK)) {
-            this.forwardImpulse--;
+        if (this.keyPresses.backward()) {
+            forwardImpulse--;
         }
-
-        if (this.left = handler.isInputForcedDown(Input.MOVE_LEFT)) {
-            this.leftImpulse++;
+        if (this.keyPresses.left()) {
+            leftImpulse++;
         }
-
-        if (this.right = handler.isInputForcedDown(Input.MOVE_RIGHT)) {
-            this.leftImpulse--;
+        if (this.keyPresses.right()) {
+            leftImpulse--;
         }
-
-        if (this.shiftKeyDown = handler.isInputForcedDown(Input.SNEAK)) {
-            this.leftImpulse *= 0.3D;
-            this.forwardImpulse *= 0.3D;
+        if (this.keyPresses.shift()) {
+            leftImpulse *= 0.3D;
+            forwardImpulse *= 0.3D;
         }
+        this.moveVector = new net.minecraft.world.phys.Vec2(leftImpulse, forwardImpulse);
     }
 }

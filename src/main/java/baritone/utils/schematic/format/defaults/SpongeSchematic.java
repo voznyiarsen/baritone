@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -96,18 +96,18 @@ public final class SpongeSchematic extends StaticSchematic {
 
         private static final Pattern REGEX = Pattern.compile("(?<location>(\\w+:)?\\w+)(\\[(?<properties>(\\w+=\\w+,?)+)])?");
 
-        private final ResourceLocation resourceLocation;
+        private final Identifier resourceLocation;
         private final Map<String, String> properties;
         private BlockState blockState;
 
-        private SerializedBlockState(ResourceLocation resourceLocation, Map<String, String> properties) {
+        private SerializedBlockState(Identifier resourceLocation, Map<String, String> properties) {
             this.resourceLocation = resourceLocation;
             this.properties = properties;
         }
 
         private BlockState deserialize() {
             if (this.blockState == null) {
-                Block block = BuiltInRegistries.BLOCK.get(this.resourceLocation);
+                Block block = BuiltInRegistries.BLOCK.getOptional(this.resourceLocation).orElse(null);
                 this.blockState = block.defaultBlockState();
 
                 this.properties.keySet().stream().sorted(String::compareTo).forEachOrdered(key -> {
@@ -130,7 +130,7 @@ public final class SpongeSchematic extends StaticSchematic {
                 String location = m.group("location");
                 String properties = m.group("properties");
 
-                ResourceLocation resourceLocation = new ResourceLocation(location);
+                Identifier resourceLocation = Identifier.parse(location);
                 Map<String, String> propertiesMap = new HashMap<>();
                 if (properties != null) {
                     for (String property : properties.split(",")) {

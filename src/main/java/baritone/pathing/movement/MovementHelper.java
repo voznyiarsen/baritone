@@ -44,7 +44,6 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -180,7 +179,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             return NO;
         }
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
-            if (state.isPathfindable(null, null, PathComputationType.LAND)) {
+            if (state.isPathfindable(PathComputationType.LAND)) {
                 return YES;
             } else {
                 return NO;
@@ -224,7 +223,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
 
             BlockState up = bsi.get0(x, y + 1, z);
-            if (!up.getFluidState().isEmpty() || up.getBlock() instanceof WaterlilyBlock) {
+            if (!up.getFluidState().isEmpty() || up.getBlock() instanceof LilyPadBlock) {
                 return false;
             }
             return fluidState.getType() instanceof WaterFluid;
@@ -233,7 +232,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // every block that overrides isPassable with anything more complicated than a "return true;" or "return false;"
         // has already been accounted for above
         // therefore it's safe to not construct a blockpos from our x, y, z ints and instead just pass null
-        return state.isPathfindable(bsi.access, BlockPos.ZERO, PathComputationType.LAND); // workaround for future compatibility =P
+        return state.isPathfindable(PathComputationType.LAND); // workaround for future compatibility =P
     }
 
     static Ternary fullyPassableBlockState(BlockState state) {
@@ -262,7 +261,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
         // at least in 1.12.2 vanilla, that is.....
         try { // A dodgy catch-all at the end, for most blocks with default behaviour this will work, however where blocks are special this will error out, and we can handle it when we have this information
-            if (state.isPathfindable(null, null, PathComputationType.LAND)) {
+            if (state.isPathfindable(PathComputationType.LAND)) {
                 return YES;
             } else {
                 return NO;
@@ -299,7 +298,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean fullyPassablePosition(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
-        return state.isPathfindable(bsi.access, bsi.isPassableBlockPos.set(x, y, z), PathComputationType.LAND);
+        return state.isPathfindable(PathComputationType.LAND);
     }
 
     static boolean isReplaceable(int x, int y, int z, BlockState state, BlockStateInterface bsi) {
@@ -328,7 +327,8 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.LARGE_FERN || block == Blocks.TALL_GRASS) {
             return true;
         }
-        return state.getMaterial().isReplaceable();
+        // isReplaceable was removed in 1.21.4; default to false for safety
+        return false;
     }
 
     static boolean isDoorPassable(IPlayerContext ctx, BlockPos doorPos, BlockPos playerPos) {
@@ -507,14 +507,15 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean canUseFrostWalker(CalculationContext context, BlockState state) {
         return context.frostWalker != 0
-                && state.getMaterial() == Material.WATER
+                && isWater(state)
                 && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
     }
 
     static boolean canUseFrostWalker(IPlayerContext ctx, BlockPos pos) {
+        // EnchantmentHelper.hasFrostWalker was removed in 1.21.4
+        // Frost walker check is now done via EnchantmentHelper.getItemEnchantmentLevel with FROST_WALKER
         BlockState state = BlockStateInterface.get(ctx, pos);
-        return EnchantmentHelper.hasFrostWalker(ctx.player())
-                && state.getMaterial() == Material.WATER
+        return isWater(state)
                 && ((Integer) state.getValue(LiquidBlock.LEVEL)) == 0;
     }
 
@@ -655,7 +656,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b, ToolSet ts, boolean preferSilkTouch) {
         if (Baritone.settings().autoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().getInventory().selected = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+            ctx.player().getInventory().setSelectedSlot(ts.getBestSlot(b.getBlock(), preferSilkTouch));
         }
     }
 

@@ -17,13 +17,13 @@
 
 package baritone.api.utils.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.Toast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class BaritoneToast implements Toast {
     private String title;
@@ -31,6 +31,7 @@ public class BaritoneToast implements Toast {
     private long firstDrawTime;
     private boolean newDisplay;
     private long totalShowTime;
+    private Toast.Visibility wantedVisibility = Toast.Visibility.SHOW;
 
     public BaritoneToast(Component titleComponent, Component subtitleComponent, long totalShowTime) {
         this.title = titleComponent.getString();
@@ -38,26 +39,31 @@ public class BaritoneToast implements Toast {
         this.totalShowTime = totalShowTime;
     }
 
-    public Visibility render(PoseStack matrixStack, ToastComponent toastGui, long delta) {
+    @Override
+    public Toast.Visibility getWantedVisibility() {
+        return wantedVisibility;
+    }
+
+    @Override
+    public void update(ToastManager toastManager, long delta) {
         if (this.newDisplay) {
             this.firstDrawTime = delta;
             this.newDisplay = false;
         }
+        this.wantedVisibility = delta - this.firstDrawTime < totalShowTime ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
+    }
 
-
-        //TODO: check
-        toastGui.getMinecraft().getTextureManager().bindForSetup(new ResourceLocation("textures/gui/toasts.png"));
-        //GlStateManager._color4f(1.0F, 1.0F, 1.0F, 255.0F);
-        toastGui.blit(matrixStack, 0, 0, 0, 32, 160, 32);
-
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor extractor, Font font, long delta) {
+        extractor.pose().pushMatrix();
+        extractor.blit(Identifier.parse("textures/gui/toasts.png"), 0, 0, 0, 160, 32.0F, 0.0F, 0.0F, 0.0F);
         if (this.subtitle == null) {
-            toastGui.getMinecraft().font.draw(matrixStack, this.title, 18, 12, -11534256);
+            extractor.text(font, this.title, 18, 12, -11534256);
         } else {
-            toastGui.getMinecraft().font.draw(matrixStack, this.title, 18, 7, -11534256);
-            toastGui.getMinecraft().font.draw(matrixStack, this.subtitle, 18, 18, -16777216);
+            extractor.text(font, this.title, 18, 7, -11534256);
+            extractor.text(font, this.subtitle, 18, 18, -16777216);
         }
-
-        return delta - this.firstDrawTime < totalShowTime ? Visibility.SHOW : Visibility.HIDE;
+        extractor.pose().popMatrix();
     }
 
     public void setDisplayedText(Component titleComponent, Component subtitleComponent) {
@@ -66,8 +72,8 @@ public class BaritoneToast implements Toast {
         this.newDisplay = true;
     }
 
-    public static void addOrUpdate(ToastComponent toast, Component title, Component subtitle, long totalShowTime) {
-        BaritoneToast baritonetoast = toast.getToast(BaritoneToast.class, new Object());
+    public static void addOrUpdate(ToastManager toast, Component title, Component subtitle, long totalShowTime) {
+        BaritoneToast baritonetoast = toast.getToast(BaritoneToast.class, Toast.NO_TOKEN);
 
         if (baritonetoast == null) {
             toast.addToast(new BaritoneToast(title, subtitle, totalShowTime));
@@ -77,6 +83,6 @@ public class BaritoneToast implements Toast {
     }
 
     public static void addOrUpdate(Component title, Component subtitle) {
-        addOrUpdate(Minecraft.getInstance().getToasts(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
+        addOrUpdate(Minecraft.getInstance().getToastManager(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
     }
 }

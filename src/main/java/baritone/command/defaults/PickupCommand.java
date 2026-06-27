@@ -51,7 +51,7 @@ public class PickupCommand extends Command {
         } else {
             baritone.getFollowProcess().pickup(stack -> collecting.contains(stack.getItem()));
             logDirect("Picking up these items:");
-            collecting.stream().map(BuiltInRegistries.ITEM::getKey).map(ResourceLocation::toString).forEach(this::logDirect);
+            collecting.stream().map(BuiltInRegistries.ITEM::getKey).map(Object::toString).forEach(this::logDirect);
         }
     }
 
