@@ -25,9 +25,7 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.interfaces.IGoalRenderPos;
 import baritone.behavior.PathingBehavior;
 import baritone.pathing.path.PathExecutor;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -50,7 +48,6 @@ import java.util.List;
  */
 public final class PathRenderer implements IRenderer {
 
-    private static final Identifier TEXTURE_BEACON_BEAM = Identifier.parse("textures/entity/beacon_beam.png");
 
 
     private PathRenderer() {}
@@ -257,43 +254,11 @@ public final class PathRenderer implements IRenderer {
             drawDankLitGoalBox(stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         } else if (goal instanceof GoalXZ) {
             GoalXZ goalPos = (GoalXZ) goal;
-            minY = ctx.world().getMinBuildHeight();
-            maxY = ctx.world().getMaxBuildHeight();
+            minY = ctx.world().getMinY();
+            maxY = ctx.world().getMaxY();
 
-            if (settings.renderGoalXZBeacon.value) {
-                //TODO: check
-                textureManager.bindForSetup(TEXTURE_BEACON_BEAM);
-                if (settings.renderGoalIgnoreDepth.value) {
-                    RenderSystem.disableDepthTest();
-                }
-
-                stack.pushPose(); // push
-                stack.translate(goalPos.getX() - renderPosX, -renderPosY, goalPos.getZ() - renderPosZ); // translate
-
-                //TODO: check
-                BeaconRenderer.renderBeaconBeam(
-                        stack,
-                        ctx.minecraft().renderBuffers().bufferSource(),
-                        TEXTURE_BEACON_BEAM,
-                        settings.renderGoalAnimated.value ? partialTicks : 0,
-                        1.0F,
-                        settings.renderGoalAnimated.value ? ctx.world().getGameTime() : 0,
-                        (int) minY,
-                        (int) maxY,
-                        color.getColorComponents(null),
-
-                        // Arguments filled by the private method lol
-                        0.2F,
-                        0.25F
-                );
-
-                stack.popPose(); // pop
-
-                if (settings.renderGoalIgnoreDepth.value) {
-                    RenderSystem.enableDepthTest();
-                }
-                return;
-            }
+            // Beacon beam rendering disabled for MC 26.1.2+ (API removed)
+            // Fall through to box rendering below
 
             minX = goalPos.getX() + 0.002 - renderPosX;
             maxX = goalPos.getX() + 1 - 0.002 - renderPosX;

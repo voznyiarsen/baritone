@@ -24,12 +24,12 @@ import baritone.utils.ToolSet;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
@@ -67,7 +67,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         if (firstValidThrowaway() >= 9) { // aka there are none on the hotbar, but there are some in main inventory
             requestSwapWithHotBar(firstValidThrowaway(), 8);
         }
-        int pick = bestToolAgainst(Blocks.STONE, PickaxeItem.class);
+        int pick = bestToolAgainst(Blocks.STONE, ItemTags.PICKAXES);
         if (pick >= 9) {
             requestSwapWithHotBar(pick, 0);
         }
@@ -118,7 +118,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
             logDebug("Inventory move requested but delaying until stationary");
             return false;
         }
-        ctx.playerController().windowClick(ctx.player().inventoryMenu.containerId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ClickAction.SWAP, ctx.player());
+        ctx.playerController().windowClick(ctx.player().inventoryMenu.containerId, inInventory < 9 ? inInventory + 36 : inInventory, inHotbar, ContainerInput.SWAP, ctx.player());
         ticksSinceLastInventoryMove = 0;
         lastTickRequestedMove = null;
         return true;
@@ -134,7 +134,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
         return -1;
     }
 
-    private int bestToolAgainst(Block against, Class<? extends DiggerItem> cla$$) {
+    private int bestToolAgainst(Block against, net.minecraft.tags.TagKey<Item> tag) {
         int bestInd = -1;
         double bestSpeed = -1;
         var inv = ctx.player().getInventory();
@@ -146,7 +146,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
             if (Baritone.settings().itemSaver.value && (stack.getDamageValue() + Baritone.settings().itemSaverThreshold.value) >= stack.getMaxDamage() && stack.getMaxDamage() > 1) {
                 continue;
             }
-            if (cla$$.isInstance(stack.getItem())) {
+            if (stack.is(tag)) {
                 double speed = ToolSet.calculateSpeedVsBlock(stack, against.defaultBlockState(), ctx.player().level().registryAccess()); // takes into account enchants
                 if (speed > bestSpeed) {
                     bestSpeed = speed;
@@ -203,7 +203,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
                 return true;
             }
         }
-        if (desired.test(inv.getOffhand().get(0))) {
+        if (desired.test(inv.getItem(Inventory.SLOT_OFFHAND))) {
             // main hand takes precedence over off hand
             // that means that if we have block A selected in main hand and block B in off hand, right clicking places block B
             // we've already checked above ^ and the main hand can't possible have an acceptablethrowawayitem
@@ -211,7 +211,7 @@ public final class InventoryBehavior extends Behavior implements Helper {
             // so not a shovel, not a hoe, not a block, etc
             for (int i = 0; i < 9; i++) {
                 ItemStack item = inv.getItem(i);
-                if (item.isEmpty() || item.getItem() instanceof PickaxeItem) {
+                if (item.isEmpty() || item.is(ItemTags.PICKAXES)) {
                     if (select) {
                         inv.setSelectedSlot(i);
                     }

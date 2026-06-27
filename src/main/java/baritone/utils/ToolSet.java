@@ -99,8 +99,8 @@ public class ToolSet {
 
     public boolean hasSilkTouch(ItemStack stack) {
         Registry<Enchantment> reg = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-        Holder<Enchantment> silkTouch = reg.getHolder(Enchantments.SILK_TOUCH).orElse(null);
-        return silkTouch != null && EnchantmentHelper.getItemEnchantmentLevel(silkTouch, stack) > 0;
+        Holder<Enchantment> silkTouch = reg.getOrThrow(Enchantments.SILK_TOUCH);
+        return EnchantmentHelper.getItemEnchantmentLevel(silkTouch, stack) > 0;
     }
 
     /**
@@ -197,9 +197,9 @@ public class ToolSet {
 
         float speed = item.getDestroySpeed(state);
         if (speed > 1) {
-            Registry<Enchantment> reg = player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-            Holder<Enchantment> efficiency = reg.getHolder(Enchantments.EFFICIENCY).orElse(null);
-            if (efficiency != null && !item.isEmpty()) {
+            Registry<Enchantment> reg = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
+            Holder<Enchantment> efficiency = reg.getOrThrow(Enchantments.EFFICIENCY);
+            if (!item.isEmpty()) {
                 int effLevel = EnchantmentHelper.getItemEnchantmentLevel(efficiency, item);
                 if (effLevel > 0) {
                     speed += effLevel * effLevel + 1;

@@ -25,12 +25,12 @@ import baritone.api.utils.Helper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
@@ -62,7 +62,8 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void tick() {
+        // Replaces the old render() method - called each tick
         double mx = mc.mouseHandler.xpos();
         double my = mc.mouseHandler.ypos();
 
@@ -70,7 +71,7 @@ public class GuiClick extends Screen implements Helper {
         my *= mc.getWindow().getHeight() / (double) mc.getWindow().getScreenHeight();
         mx *= mc.getWindow().getWidth() / (double) mc.getWindow().getScreenWidth();
         Vec3 near = toWorld(mx, my, 0);
-        Vec3 far = toWorld(mx, my, 1); // "Use 0.945 that's what stack overflow says" - leijurv
+        Vec3 far = toWorld(mx, my, 1);
 
         if (near != null && far != null) {
             Vec3 viewerPos = new Vec3(PathRenderer.posX(), PathRenderer.posY(), PathRenderer.posZ());
@@ -83,8 +84,9 @@ public class GuiClick extends Screen implements Helper {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
-        if (currentMouseOver != null) { //Catch this, or else a click into void will result in a crash
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+        if (currentMouseOver != null) {
+            int mouseButton = mouseButtonEvent.button();
             if (mouseButton == 0) {
                 if (clickStart != null && !clickStart.equals(currentMouseOver)) {
                     BaritoneAPI.getProvider().getPrimaryBaritone().getSelectionManager().removeAllSelections();
@@ -92,10 +94,7 @@ public class GuiClick extends Screen implements Helper {
                     MutableComponent component = Component.literal("Selection made! For usage: " + Baritone.settings().prefix.value + "help sel");
                     component.setStyle(component.getStyle()
                             .withColor(ChatFormatting.WHITE)
-                            .withClickEvent(new ClickEvent(
-                                    ClickEvent.Action.RUN_COMMAND,
-                                    FORCE_COMMAND_PREFIX + "help sel"
-                            )));
+                            .withClickEvent(new ClickEvent.RunCommand(FORCE_COMMAND_PREFIX + "help sel")));
                     Helper.HELPER.logDirect(component);
                     clickStart = null;
                 } else {
@@ -106,13 +105,13 @@ public class GuiClick extends Screen implements Helper {
             }
         }
         clickStart = null;
-        return super.mouseReleased(mouseX, mouseY, mouseButton);
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         clickStart = currentMouseOver;
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
     public void onRender(PoseStack modelViewStack, Matrix4f projectionMatrix) {

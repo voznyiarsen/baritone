@@ -24,6 +24,7 @@ import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.ClickEvent.RunCommand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,7 +50,14 @@ public abstract class MixinScreen implements IGuiScreen {
         if (clickEvent == null) {
             return;
         }
-        String command = clickEvent.getValue();
+        String command;
+        if (clickEvent instanceof RunCommand) {
+            command = ((RunCommand) clickEvent).command();
+        } else if (clickEvent.action() == ClickEvent.Action.SUGGEST_COMMAND) {
+            command = clickEvent.toString(); // fallback
+        } else {
+            return;
+        }
         if (command == null || !command.startsWith(FORCE_COMMAND_PREFIX)) {
             return;
         }

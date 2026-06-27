@@ -78,13 +78,13 @@ public final class ChunkPacker {
                         for (int x = 0; x < 16; x++) {
                             int index = CachedChunk.getPositionIndex(x, y, z);
                             BlockState state = bsc.get(x, y1, z);
-                            boolean[] bits = getPathingBlockType(state, chunk, x, y + chunk.getMinBuildHeight(), z).getBits();
+                            boolean[] bits = getPathingBlockType(state, chunk, x, y + chunk.getLevel().getMinY(), z).getBits();
                             bitSet.set(index, bits[0]);
                             bitSet.set(index + 1, bits[1]);
                             Block block = state.getBlock();
                             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
                                 String name = BlockUtils.blockToString(block);
-                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getMinBuildHeight(), z));
+                                specialBlocks.computeIfAbsent(name, b -> new ArrayList<>()).add(new BlockPos(x, y+chunk.getLevel().getMinY(), z));
                             }
                         }
                     }
@@ -167,15 +167,13 @@ public final class ChunkPacker {
                 return Blocks.LAVA.defaultBlockState();
             case SOLID:
                 // Dimension solid types
-                if (dimension.natural()) {
-                    return Blocks.STONE.defaultBlockState();
-                }
-                if (dimension.ultraWarm()) {
+                if (dimension.hasCeiling()) {
                     return Blocks.NETHERRACK.defaultBlockState();
                 }
-                if (dimension.effectsLocation().equals(BuiltinDimensionTypes.END_EFFECTS)) {
-                    return Blocks.END_STONE.defaultBlockState();
+                if (dimension.minY() < 0) {
+                    return Blocks.STONE.defaultBlockState();
                 }
+                return Blocks.END_STONE.defaultBlockState();
             default:
                 return null;
         }

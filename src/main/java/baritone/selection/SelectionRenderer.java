@@ -7,6 +7,7 @@ import baritone.api.selection.ISelection;
 import baritone.utils.IRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
 
@@ -38,13 +39,13 @@ public class SelectionRenderer implements IRenderer, AbstractGameEventListener {
             IRenderer.glColor(settings.colorSelectionPos1.value, opacity);
 
             for (ISelection selection : selections) {
-                IRenderer.emitAABB(stack, new AABB(selection.pos1(), selection.pos1().offset(1, 1, 1)));
+                IRenderer.emitAABB(stack, new AABB(Vec3.atCenterOf(selection.pos1()), Vec3.atCenterOf(selection.pos1().offset(1, 1, 1))));
             }
 
             IRenderer.glColor(settings.colorSelectionPos2.value, opacity);
 
             for (ISelection selection : selections) {
-                IRenderer.emitAABB(stack, new AABB(selection.pos2(), selection.pos2().offset(1, 1, 1)));
+                IRenderer.emitAABB(stack, new AABB(Vec3.atCenterOf(selection.pos2()), Vec3.atCenterOf(selection.pos2().offset(1, 1, 1))));
             }
         }
 

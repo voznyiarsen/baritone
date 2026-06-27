@@ -24,7 +24,6 @@ import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import org.objectweb.asm.Opcodes;
@@ -33,7 +32,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -162,18 +160,7 @@ public class MixinMinecraft {
         );
     }
 
-    @Redirect(
-            method = "tick",
-            at = @At(
-                    value = "FIELD",
-                    opcode = Opcodes.GETFIELD,
-                    target = "Lnet/minecraft/client/gui/screens/Screen;passEvents:Z"
-            )
-    )
-    private boolean passEvents(Screen screen) {
-        // allow user input is only the primary baritone
-        return (BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().isPathing() && player != null) || screen.passEvents;
-    }
+
 
     // TODO
     // FIXME

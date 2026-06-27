@@ -41,7 +41,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -232,7 +231,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
 
             BlockState state = ctx.world().getBlockState(pos);
-            boolean airAbove = ctx.world().getBlockState(pos.above()).getBlock() instanceof AirBlock;
+            boolean airAbove = ctx.world().getBlockState(pos.above()).isAir();
             if (state.getBlock() == Blocks.FARMLAND) {
                 if (airAbove) {
                     openFarmland.add(pos);
@@ -247,7 +246,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
             if (state.getBlock() == Blocks.JUNGLE_LOG) {
                 for (Direction direction : Direction.Plane.HORIZONTAL) {
-                    if (ctx.world().getBlockState(pos.relative(direction)).getBlock() instanceof AirBlock) {
+                    if (ctx.world().getBlockState(pos.relative(direction)).isAir()) {
                         openLog.add(pos);
                         break;
                     }
@@ -260,7 +259,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
             if (state.getBlock() instanceof BonemealableBlock) {
                 BonemealableBlock ig = (BonemealableBlock) state.getBlock();
-                if (ig.isValidBonemealTarget(ctx.world(), pos, state, true) && ig.isBonemealSuccess(ctx.world(), ctx.world().random, pos, state)) {
+                if (ig.isValidBonemealTarget(ctx.world(), pos, state) && ig.isBonemealSuccess(ctx.world(), ctx.world().getRandom(), pos, state)) {
                     bonemealable.add(pos);
                 }
             }
@@ -307,10 +306,10 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
                 continue;
             }
             for (Direction dir : Direction.Plane.HORIZONTAL) {
-                if (!(ctx.world().getBlockState(pos.relative(dir)).getBlock() instanceof AirBlock)) {
+                if (!(ctx.world().getBlockState(pos.relative(dir)).isAir())) {
                     continue;
                 }
-                Vec3 faceCenter = Vec3.atCenterOf(pos).add(Vec3.atLowerCornerOf(dir.getNormal()).scale(0.5));
+                Vec3 faceCenter = Vec3.atCenterOf(pos).add(new Vec3(dir.getStepX(), dir.getStepY(), dir.getStepZ()).scale(0.5));
                 Optional<Rotation> rot = RotationUtils.reachableOffset(ctx, pos, faceCenter, blockReachDistance, false);
                 if (rot.isPresent() && isSafeToCancel && baritone.getInventoryBehavior().throwaway(true, this::isCocoa)) {
                     HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), blockReachDistance);
@@ -364,7 +363,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
         if (baritone.getInventoryBehavior().throwaway(false, this::isCocoa)) {
             for (BlockPos pos : openLog) {
                 for (Direction direction : Direction.Plane.HORIZONTAL) {
-                    if (ctx.world().getBlockState(pos.relative(direction)).getBlock() instanceof AirBlock) {
+                    if (ctx.world().getBlockState(pos.relative(direction)).isAir()) {
                         goalz.add(new GoalGetToBlock(pos.relative(direction)));
                     }
                 }
@@ -376,7 +375,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
             }
         }
         for (Entity entity : ctx.entities()) {
-            if (entity instanceof ItemEntity && entity.isOnGround()) {
+            if (entity instanceof ItemEntity && entity.onGround()) {
                 ItemEntity ei = (ItemEntity) entity;
                 if (PICKUP_DROPPED.contains(ei.getItem().getItem())) {
                     // +0.1 because of farmland's 0.9375 dummy height lol

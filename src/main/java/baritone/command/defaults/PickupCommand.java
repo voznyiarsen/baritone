@@ -23,7 +23,7 @@ import baritone.api.command.argument.IArgConsumer;
 import baritone.api.command.datatypes.ItemById;
 import baritone.api.command.exception.CommandException;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import java.util.Arrays;

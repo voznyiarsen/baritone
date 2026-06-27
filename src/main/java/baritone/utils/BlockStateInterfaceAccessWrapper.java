@@ -17,7 +17,7 @@
 
 package baritone.utils;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -60,8 +60,8 @@ public final class BlockStateInterfaceAccessWrapper implements BlockGetter {
     }
 
     @Override
-    public int getMinBuildHeight() {
-        return bsi.world.getMinBuildHeight();
+    public int getMinY() {
+        return bsi.world.getMinY();
     }
 
 }

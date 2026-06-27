@@ -30,6 +30,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -109,14 +113,18 @@ public class CalculationContext {
         this.allowParkourAscend = Baritone.settings().allowParkourAscend.value;
         this.assumeWalkOnWater = Baritone.settings().assumeWalkOnWater.value;
         this.allowFallIntoLava = false; // Super secret internal setting for ElytraBehavior
-        this.frostWalker = EnchantmentHelper.getEnchantmentLevel(Enchantments.FROST_WALKER, baritone.getPlayerContext().player());
+        this.frostWalker = EnchantmentHelper.getEnchantmentLevel(
+                player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.FROST_WALKER),
+                player);
         this.allowDiagonalDescend = Baritone.settings().allowDiagonalDescend.value;
         this.allowDiagonalAscend = Baritone.settings().allowDiagonalAscend.value;
         this.allowDownward = Baritone.settings().allowDownward.value;
         this.minFallHeight = 3; // Minimum fall height used by MovementFall
         this.maxFallHeightNoWater = Baritone.settings().maxFallHeightNoWater.value;
         this.maxFallHeightBucket = Baritone.settings().maxFallHeightBucket.value;
-        int depth = EnchantmentHelper.getDepthStrider(player);
+        int depth = EnchantmentHelper.getEnchantmentLevel(
+                player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.DEPTH_STRIDER),
+                player);
         if (depth > 3) {
             depth = 3;
         }

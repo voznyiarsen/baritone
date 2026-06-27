@@ -20,17 +20,16 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * @author Brady
@@ -41,12 +40,15 @@ public class MixinWorldRenderer {
 
     @Inject(
             method = "renderLevel",
-            at = @At("RETURN"),
-            locals = LocalCapture.CAPTURE_FAILSOFT
+            at = @At("RETURN")
     )
-    private void onStartHand(PoseStack matrixStackIn, float partialTicks, long finishTimeNano, boolean drawBlockOutline, Camera activeRenderInfoIn, GameRenderer gameRendererIn, LightTexture lightmapIn, Matrix4f projectionIn, CallbackInfo ci) {
+    private void onStartHand(DeltaTracker deltaTracker, boolean renderBlockOutline, CameraRenderState cameraRenderState, CallbackInfo ci) {
+        float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+        PoseStack modelViewStack = new PoseStack();
+        modelViewStack.mulPose(RenderSystem.getModelViewMatrix());
+        Matrix4f projectionMatrix = new Matrix4f(cameraRenderState.projectionMatrix);
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, matrixStackIn, projectionIn));
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewStack, projectionMatrix));
         }
     }
 }

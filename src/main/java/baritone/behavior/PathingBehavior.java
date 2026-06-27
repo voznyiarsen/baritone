@@ -158,7 +158,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                     queuePathEvent(PathEvent.AT_GOAL);
                     next = null;
                     if (Baritone.settings().disconnectOnArrival.value) {
-                        ctx.world().disconnect();
+                        ctx.minecraft().disconnectFromWorld(net.minecraft.network.chat.Component.literal("Baritone pathing complete"));
                     }
                     return;
                 }
@@ -423,7 +423,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
         if (!MovementHelper.canWalkOn(ctx, feet.below())) {
-            if (ctx.player().isOnGround()) {
+            if (ctx.player().onGround()) {
                 double playerX = ctx.player().position().x;
                 double playerZ = ctx.player().position().z;
                 ArrayList<BetterBlockPos> closest = new ArrayList<>();

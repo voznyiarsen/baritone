@@ -859,7 +859,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         List<BetterBlockPos> blocks = new ArrayList<>();
         for (byte x = -1; x <= 1; x++) {
             for (byte z = -1; z <= 1; z++) {
-                if (ctx.player().getBoundingBox().intersects(Vec3.atLowerCornerOf(ctx.player().blockPosition()).add(x, 0, z), Vec3.atLowerCornerOf(ctx.player().blockPosition()).add(x + 1, 1, z + 1))) {
+                if (ctx.player().getBoundingBox().intersects(new Vec3(ctx.player().blockPosition().getX(), ctx.player().blockPosition().getY(), ctx.player().blockPosition().getZ()).add(x, 0, z), new Vec3(ctx.player().blockPosition().getX(), ctx.player().blockPosition().getY(), ctx.player().blockPosition().getZ()).add(x + 1, 1, z + 1))) {
                     blocks.add(new BetterBlockPos(ctx.player().getBlockX() + x, ctx.player().getBlockY() - 1, ctx.player().getBlockZ() + z));
                 }
             }

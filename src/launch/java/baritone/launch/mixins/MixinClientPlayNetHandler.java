@@ -30,7 +30,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket;
+import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Final;
@@ -106,7 +110,7 @@ public class MixinClientPlayNetHandler {
                 ibaritone.getGameEventHandler().onChunkEvent(
                         new ChunkEvent(
                                 EventState.POST,
-                                !packetIn.isSkippable() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
+                                ChunkEvent.Type.POPULATE_FULL,
                                 packetIn.getX(),
                                 packetIn.getZ()
                         )
@@ -124,7 +128,7 @@ public class MixinClientPlayNetHandler {
             LocalPlayer player = ibaritone.getPlayerContext().player();
             if (player != null && player.connection == (ClientPacketListener) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
-                        new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
+                        new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.pos().x(), packet.pos().z())
                 );
             }
         }
@@ -139,7 +143,7 @@ public class MixinClientPlayNetHandler {
             LocalPlayer player = ibaritone.getPlayerContext().player();
             if (player != null && player.connection == (ClientPacketListener) (Object) this) {
                 ibaritone.getGameEventHandler().onChunkEvent(
-                        new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.getX(), packet.getZ())
+                        new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.pos().x(), packet.pos().z())
                 );
             }
         }
@@ -189,7 +193,7 @@ public class MixinClientPlayNetHandler {
             return;
         }
         baritone.getGameEventHandler().onBlockChange(new BlockChangeEvent(
-                new ChunkPos(changes.get(0).first()),
+                new ChunkPos(changes.get(0).first().getX(), changes.get(0).first().getZ()),
                 changes
         ));
     }

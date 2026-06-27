@@ -32,7 +32,6 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BlockStateInterface;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarpetBlock;
@@ -94,7 +93,7 @@ public class MovementPillar extends Movement {
             if (placeCost >= COST_INF) {
                 return COST_INF;
             }
-            if (fromDown.getBlock() instanceof AirBlock) {
+            if (fromDown.isAir()) {
                 placeCost += 0.1; // slightly (1/200th of a second) penalize pillaring on what's currently air
             }
         }
@@ -216,7 +215,7 @@ public class MovementPillar extends Movement {
                 BlockState frState = BlockStateInterface.get(ctx, src);
                 Block fr = frState.getBlock();
                 // TODO: Evaluate usage of getMaterial().isReplaceable()
-                if (!(fr instanceof AirBlock || frState.getMaterial().isReplaceable())) {
+                if (!(frState.isAir() || frState.canBeReplaced())) {
                     RotationUtils.reachable(ctx, src, ctx.playerController().getBlockReachDistance())
                             .map(rot -> new MovementState.MovementTarget(rot, true))
                             .ifPresent(state::setTarget);
