@@ -80,37 +80,8 @@ public abstract class MixinLivingEntity extends Entity {
         return self.getYRot();
     }
 
-    @Inject(
-            method = "travel",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/world/entity/LivingEntity.getLookAngle()Lnet/minecraft/world/phys/Vec3;"
-            )
-    )
-    private void onPreElytraMove(Vec3 direction, CallbackInfo ci) {
-        this.getBaritone().ifPresent(baritone -> {
-            this.elytraRotationEvent = new RotationMoveEvent(RotationMoveEvent.Type.MOTION_UPDATE, this.getYRot(), this.getXRot());
-            baritone.getGameEventHandler().onPlayerRotationMove(this.elytraRotationEvent);
-            this.setYRot(this.elytraRotationEvent.getYaw());
-            this.setXRot(this.elytraRotationEvent.getPitch());
-        });
-    }
-
-    @Inject(
-            method = "travel",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/world/entity/LivingEntity.move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V",
-                    shift = At.Shift.AFTER
-            )
-    )
-    private void onPostElytraMove(Vec3 direction, CallbackInfo ci) {
-        if (this.elytraRotationEvent != null) {
-            this.setYRot(this.elytraRotationEvent.getOriginal().getYaw());
-            this.setXRot(this.elytraRotationEvent.getOriginal().getPitch());
-            this.elytraRotationEvent = null;
-        }
-    }
+    // elytra movement hooks disabled for MC 26.1.2 - travel() no longer calls getLookAngle()
+    // TODO: reimplement targeting travelFlying() method
 
     @Unique
     private Optional<IBaritone> getBaritone() {
