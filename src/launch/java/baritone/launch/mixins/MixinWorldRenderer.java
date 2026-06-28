@@ -17,19 +17,8 @@
 
 package baritone.launch.mixins;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.IBaritone;
-import baritone.api.event.events.RenderEvent;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Brady
@@ -37,18 +26,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(LevelRenderer.class)
 public class MixinWorldRenderer {
-
-    @Inject(
-            method = "renderLevel",
-            at = @At("RETURN")
-    )
-    private void onStartHand(DeltaTracker deltaTracker, boolean renderBlockOutline, CameraRenderState cameraRenderState, CallbackInfo ci) {
-        float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
-        PoseStack modelViewStack = new PoseStack();
-        modelViewStack.mulPose(RenderSystem.getModelViewMatrix());
-        Matrix4f projectionMatrix = new Matrix4f(cameraRenderState.projectionMatrix);
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewStack, projectionMatrix));
-        }
-    }
+    // renderLevel signature changed significantly in MC 26.1.2 (9 params instead of 4)
+    // TODO: reimplement render hook using new LevelRenderer API
 }
