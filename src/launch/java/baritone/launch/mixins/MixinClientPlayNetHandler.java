@@ -17,19 +17,174 @@
 
 package baritone.launch.mixins;
 
+import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
+import baritone.api.event.events.BlockChangeEvent;
+import baritone.api.event.events.ChatEvent;
+import baritone.api.event.events.ChunkEvent;
+import baritone.api.event.events.type.EventState;
+import baritone.api.utils.Pair;
+import baritone.cache.CachedChunk;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket;
+import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brady
  * @since 8/3/2018
- *
- * Disabled for MC 26.1.2 - @Shadow cannot find inherited fields from parent classes.
- * The minecraft field is in ClientCommonPacketListenerImpl, not ClientPacketListener.
- * Using accessor interface pattern instead.
  */
 @Mixin(ClientPacketListener.class)
 public class MixinClientPlayNetHandler {
-    // All hooks disabled for MC 26.1.2 compatibility
-    // TODO: reimplement using @Accessor interface for minecraft field access
+
+    private Minecraft getMinecraft() {
+        return ((IClientCommonPacketListenerImpl) this).baritone$getMinecraft();
+    }
+
+    @Inject(
+            method = "sendChat(Ljava/lang/String;)V",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void sendChatMessage(String string, CallbackInfo ci) {
+        ChatEvent event = new ChatEvent(string);
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(getMinecraft().player);
+        if (baritone == null) {
+            return;
+        }
+        baritone.getGameEventHandler().onSendChatMessage(event);
+        if (event.isCancelled()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(
+            method = "handleLevelChunkWithLight",
+            at = @At("RETURN")
+    )
+    private void postHandleChunkData(ClientboundLevelChunkWithLightPacket packetIn, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            LocalPlayer player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPacketListener) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(
+                                EventState.POST,
+                                ChunkEvent.Type.POPULATE_FULL,
+                                packetIn.getX(),
+                                packetIn.getZ()
+                        )
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "handleForgetLevelChunk",
+            at = @At("HEAD")
+    )
+    private void preChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            LocalPlayer player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPacketListener) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(EventState.PRE, ChunkEvent.Type.UNLOAD, packet.pos().x(), packet.pos().z())
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "handleForgetLevelChunk",
+            at = @At("RETURN")
+    )
+    private void postChunkUnload(ClientboundForgetLevelChunkPacket packet, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            LocalPlayer player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPacketListener) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(EventState.POST, ChunkEvent.Type.UNLOAD, packet.pos().x(), packet.pos().z())
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "handleBlockUpdate",
+            at = @At("RETURN")
+    )
+    private void postHandleBlockChange(ClientboundBlockUpdatePacket packetIn, CallbackInfo ci) {
+        if (!Baritone.settings().repackOnAnyBlockChange.value) {
+            return;
+        }
+        if (!CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(packetIn.getBlockState().getBlock())) {
+            return;
+        }
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            LocalPlayer player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPacketListener) (Object) this) {
+                ibaritone.getGameEventHandler().onChunkEvent(
+                        new ChunkEvent(
+                                EventState.POST,
+                                ChunkEvent.Type.POPULATE_FULL,
+                                packetIn.getPos().getX() >> 4,
+                                packetIn.getPos().getZ() >> 4
+                        )
+                );
+            }
+        }
+    }
+
+    @Inject(
+            method = "handleChunkBlocksUpdate",
+            at = @At("RETURN")
+    )
+    private void postHandleMultiBlockChange(ClientboundSectionBlocksUpdatePacket packetIn, CallbackInfo ci) {
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForConnection((ClientPacketListener) (Object) this);
+        if (baritone == null) {
+            return;
+        }
+
+        List<Pair<BlockPos, BlockState>> changes = new ArrayList<>();
+        packetIn.runUpdates((mutPos, state) -> {
+            changes.add(new Pair<>(mutPos.immutable(), state));
+        });
+        if (changes.isEmpty()) {
+            return;
+        }
+        baritone.getGameEventHandler().onBlockChange(new BlockChangeEvent(
+                new ChunkPos(changes.get(0).first().getX(), changes.get(0).first().getZ()),
+                changes
+        ));
+    }
+
+    @Inject(
+            method = "handlePlayerCombatKill",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;shouldShowDeathScreen()Z"
+            )
+    )
+    private void onPlayerDeath(ClientboundPlayerCombatKillPacket packetIn, CallbackInfo ci) {
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            LocalPlayer player = ibaritone.getPlayerContext().player();
+            if (player != null && player.connection == (ClientPacketListener) (Object) this) {
+                ibaritone.getGameEventHandler().onPlayerDeath();
+            }
+        }
+    }
 }
