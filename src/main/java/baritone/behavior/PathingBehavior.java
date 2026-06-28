@@ -150,6 +150,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
             if (current == null) {
                 return;
             }
+            logDebug("tickPath: executing path, pathStart=" + current.getPath().getSrc() + ", pathDest=" + current.getPath().getDest() + ", playerFeet=" + ctx.playerFeet() + ", pathLen=" + current.getPath().length());
             safeToCancel = current.onTick();
             if (current.failed() || current.finished()) {
                 current = null;
@@ -422,6 +423,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
      */
     public BetterBlockPos pathStart() { // TODO move to a helper or util class
         BetterBlockPos feet = ctx.playerFeet();
+        logDebug("pathStart: playerFeet=" + feet + ", canWalkOnBelow=" + MovementHelper.canWalkOn(ctx, feet.below()) + ", onGround=" + ctx.player().onGround());
         if (!MovementHelper.canWalkOn(ctx, feet.below())) {
             if (ctx.player().onGround()) {
                 double playerX = ctx.player().position().x;
@@ -457,6 +459,7 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 }
             }
         }
+        logDebug("pathStart: returning " + feet);
         return feet;
     }
 
@@ -511,6 +514,8 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                         if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
                             queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
                             current = executor.get();
+                            logDebug("Path assigned to current: src=" + current.getPath().getSrc() + ", dest=" + current.getPath().getDest() + ", pathLen=" + current.getPath().length() + ", playerFeet=" + ctx.playerFeet() + ", expectedSegmentStart=" + expectedSegmentStart);
+                            logDebug("Path first 3 positions: " + current.getPath().positions().subList(0, Math.min(3, current.getPath().length())));
                             resetEstimatedTicksToGoal(start);
                         } else {
                             logDebug("Warning: discarding orphan path segment with incorrect start");
@@ -565,9 +570,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         BetterBlockPos feet = ctx.playerFeet();
         var realStart = new BetterBlockPos(start);
         var sub = feet.subtract(realStart);
+        logDebug("createPathfinder: start=" + start + ", playerFeet=" + feet + ", diff=" + sub + ", sameY=" + (feet.getY() == realStart.getY()) + ", dx=" + Math.abs(sub.getX()) + ", dz=" + Math.abs(sub.getZ()));
         if (feet.getY() == realStart.getY() && Math.abs(sub.getX()) <= 1 && Math.abs(sub.getZ()) <= 1) {
+            logDebug("createPathfinder: adjusting realStart from " + realStart + " to playerFeet " + feet);
             realStart = feet;
         }
+        logDebug("createPathfinder: final realStart=" + realStart + ", goal=" + transformed);
         return new AStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
 
     }

@@ -96,7 +96,8 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
             mostRecentConsidered = currentNode;
             numNodes++;
             if (goal.isInGoal(currentNode.x, currentNode.y, currentNode.z)) {
-                logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
+                logDebug("Path found! Start=" + realStart + ", Goal=" + goal + ", GoalPos=(" + currentNode.x + "," + currentNode.y + "," + currentNode.z + "), nodes=" + numNodes + ", movementsConsidered=" + numMovementsConsidered + ", time=" + (System.currentTimeMillis() - startTime) + "ms");
+                logDebug("Path start: realStart=" + realStart + ", startX=" + startX + ", startY=" + startY + ", startZ=" + startZ);
                 return Optional.of(new Path(realStart, startNode, currentNode, numNodes, goal, calcContext));
             }
             for (Moves moves : allMoves) {
@@ -195,7 +196,11 @@ public final class AStarPathFinder extends AbstractNodeCostSearch {
         System.out.println((int) (numNodes * 1.0 / ((System.currentTimeMillis() - startTime) / 1000F)) + " nodes per second");
         Optional<IPath> result = bestSoFar(true, numNodes);
         if (result.isPresent()) {
-            logDebug("Took " + (System.currentTimeMillis() - startTime) + "ms, " + numMovementsConsidered + " movements considered");
+            IPath p = result.get();
+            logDebug("Best path (incomplete): Start=" + realStart + ", Dest=" + p.getDest() + ", Goal=" + goal + ", nodes=" + numNodes + ", pathLen=" + p.length() + ", time=" + (System.currentTimeMillis() - startTime) + "ms");
+            logDebug("Path start: realStart=" + realStart + ", startX=" + startX + ", startY=" + startY + ", startZ=" + startZ);
+            logDebug("Path first 5 positions: " + p.positions().subList(0, Math.min(5, p.length())));
+            logDebug("Path last 5 positions: " + p.positions().subList(Math.max(0, p.length() - 5), p.length()));
         }
         return result;
     }

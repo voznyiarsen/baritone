@@ -81,6 +81,8 @@ public class PathExecutor implements IPathExecutor, Helper {
         this.ctx = behavior.ctx;
         this.path = path;
         this.pathPosition = 0;
+        logDebug("PathExecutor created: src=" + path.getSrc() + ", dest=" + path.getDest() + ", pathLen=" + path.length() + ", firstPos=" + path.positions().get(0) + ", lastPos=" + path.positions().get(path.length() - 1));
+        logDebug("Path first 5 positions: " + path.positions().subList(0, Math.min(5, path.length())));
     }
 
     /**
@@ -90,6 +92,9 @@ public class PathExecutor implements IPathExecutor, Helper {
      * not sneaking out over lava), false otherwise
      */
     public boolean onTick() {
+        if (pathPosition == 0 && ctx.player().tickCount % 5 == 0) {
+            logDebug("onTick start: playerFeet=" + ctx.playerFeet() + ", pathSrc=" + path.getSrc() + ", distToSrc=" + String.format("%.3f", Math.sqrt(ctx.playerFeet().distSqr(path.getSrc()))));
+        }
         if (pathPosition == path.length() - 1) {
             pathPosition++;
         }
@@ -128,7 +133,12 @@ public class PathExecutor implements IPathExecutor, Helper {
         Tuple<Double, BlockPos> status = closestPathPos(path);
         if (possiblyOffPath(status, MAX_DIST_FROM_PATH)) {
             ticksAway++;
-            System.out.println("FAR AWAY FROM PATH FOR " + ticksAway + " TICKS. Current distance: " + status.getA() + ". Threshold: " + MAX_DIST_FROM_PATH);
+            if (ctx.player().tickCount % 5 == 0) {
+                logDebug("FAR AWAY FROM PATH: ticks=" + ticksAway + ", distance=" + String.format("%.3f", status.getA()) + ", threshold=" + MAX_DIST_FROM_PATH + ", closestPathPos=" + status.getB() + ", playerFeet=" + ctx.playerFeet() + ", playerEntityPos=" + String.format("%.2f", ctx.player().position().x) + "," + String.format("%.2f", ctx.player().position().y) + "," + String.format("%.2f", ctx.player().position().z) + ", pathPos=" + pathPosition + ", pathSrc=" + path.getSrc());
+                if (pathPosition < path.length()) {
+                    logDebug("  pathPosition target=" + path.positions().get(pathPosition) + ", movement=" + path.movements().get(pathPosition).getClass().getSimpleName());
+                }
+            }
             if (ticksAway > MAX_TICKS_AWAY) {
                 logDebug("Too far away from path for too long, cancelling path");
                 cancel();
@@ -221,8 +231,11 @@ public class PathExecutor implements IPathExecutor, Helper {
             clearKeys();
             return true;
         }
-        if (ctx.player().tickCount % 20 == 0) {
-            logDebug("onTick: pathPos=" + pathPosition + ", pathLen=" + path.length() + ", movement=" + movement.getClass().getSimpleName() + ", playerPos=" + ctx.playerFeet() + ", goal=" + path.getDest() + ", onGround=" + ctx.player().onGround());
+        if (ctx.player().tickCount % 5 == 0) {
+            logDebug("onTick: pathPos=" + pathPosition + ", pathLen=" + path.length() + ", movement=" + movement.getClass().getSimpleName() + ", playerPos=" + ctx.playerFeet() + ", playerEntityPos=" + String.format("%.2f", ctx.player().position().x) + "," + String.format("%.2f", ctx.player().position().y) + "," + String.format("%.2f", ctx.player().position().z) + ", pathSrc=" + path.getSrc() + ", pathDest=" + path.getDest() + ", onGround=" + ctx.player().onGround());
+            if (pathPosition < path.length()) {
+                logDebug("  currentPathPos=" + path.positions().get(pathPosition) + ", nextPathPos=" + (pathPosition + 1 < path.length() ? path.positions().get(pathPosition + 1) : "N/A"));
+            }
         }
         MovementStatus movementStatus = movement.update();
         if (ctx.player().tickCount % 20 == 0) {
