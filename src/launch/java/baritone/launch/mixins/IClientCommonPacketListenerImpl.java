@@ -26,6 +26,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl.class)
 public interface IClientCommonPacketListenerImpl {
-    @Accessor
-    Minecraft baritone$getMinecraft();
+    @Accessor("minecraft")
+    Minecraft getMinecraft();
 }

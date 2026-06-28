@@ -53,7 +53,7 @@ import java.util.List;
 public class MixinClientPlayNetHandler {
 
     private Minecraft getMinecraft() {
-        return ((IClientCommonPacketListenerImpl) this).baritone$getMinecraft();
+        return ((IClientCommonPacketListenerImpl) this).getMinecraft();
     }
 
     @Inject(
