@@ -484,9 +484,8 @@ public class PathExecutor implements IPathExecutor, Helper {
                     onTick();
                     return true;
                 }
-                clearKeys();
-                behavior.baritone.getLookBehavior().updateTarget(RotationUtils.calcRotationFromVec3d(ctx.playerHead(), data.getA(), ctx.playerRotations()), false);
-                behavior.baritone.getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                // Don't set MOVE_FORWARD yet - player might not be on the path
+                // Wait until the player reaches the path before moving
                 return true;
             }
         }
