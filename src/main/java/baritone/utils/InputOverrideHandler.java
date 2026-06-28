@@ -45,6 +45,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
     private final BlockBreakHelper blockBreakHelper;
     private final BlockPlaceHelper blockPlaceHelper;
+    private boolean wasInControl = false;
 
     public InputOverrideHandler(Baritone baritone) {
         super(baritone);
@@ -84,41 +85,53 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
     @Override
     public final void onTick(TickEvent event) {
-        if (event.getType() == TickEvent.Type.OUT) {
-            return;
-        }
-        if (isInputForcedDown(Input.CLICK_LEFT)) {
-            setInputForceState(Input.CLICK_RIGHT, false);
-        }
-        blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
-        blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));
+            if (event.getType() == TickEvent.Type.OUT) {
+                return;
+            }
+            if (isInputForcedDown(Input.CLICK_LEFT)) {
+                setInputForceState(Input.CLICK_RIGHT, false);
+            }
+            blockBreakHelper.tick(isInputForcedDown(Input.CLICK_LEFT));
+            blockPlaceHelper.tick(isInputForcedDown(Input.CLICK_RIGHT));
 
-        if (inControl()) {
-            if (ctx.player().input.getClass() != PlayerMovementInput.class) {
-                System.out.println("[Baritone] Replacing input with PlayerMovementInput, player.input class was " + ctx.player().input.getClass().getSimpleName());
-                ctx.player().input = new PlayerMovementInput(this);
-            }
-            // Call tick() to update keyPresses and moveVector - in MC 26.1.2, tick() is NOT called automatically
-            ((PlayerMovementInput) ctx.player().input).tick();
-        } else {
-            if (ctx.player().input.getClass() == PlayerMovementInput.class) { // allow other movement inputs that aren't this one, e.g. for a freecam
-                System.out.println("[Baritone] Replacing PlayerMovementInput with KeyboardInput");
-                ctx.player().input = new KeyboardInput(ctx.minecraft().options);
-            }
-        }
-        // only set it if it was previously incorrect
-        // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
-    }
+            // Check if we should be in control - either forced inputs are active or pathing is active
+            boolean shouldControl = inControl();
 
-    private boolean inControl() {
-        for (Input input : new Input[]{Input.MOVE_FORWARD, Input.MOVE_BACK, Input.MOVE_LEFT, Input.MOVE_RIGHT, Input.SNEAK, Input.JUMP}) {
-            if (isInputForcedDown(input)) {
-                return true;
+            if (shouldControl) {
+                if (ctx.player().input.getClass() != PlayerMovementInput.class) {
+                    System.out.println("[Baritone] Replacing input with PlayerMovementInput, player.input class was " + ctx.player().input.getClass().getSimpleName());
+                    ctx.player().input = new PlayerMovementInput(this);
+                }
+                // Call tick() to update keyPresses and moveVector - in MC 26.1.2, tick() is NOT called automatically
+                ((PlayerMovementInput) ctx.player().input).tick();
+                wasInControl = true;
+            } else {
+                // Only switch back to KeyboardInput if we were never in control or if pathing has stopped
+                if (wasInControl && !baritone.getPathingBehavior().isPathing()) {
+                    if (ctx.player().input.getClass() == PlayerMovementInput.class) {
+                        System.out.println("[Baritone] Replacing PlayerMovementInput with KeyboardInput (pathing stopped)");
+                        ctx.player().input = new KeyboardInput(ctx.minecraft().options);
+                    }
+                    wasInControl = false;
+                } else if (!wasInControl && ctx.player().input.getClass() == PlayerMovementInput.class) {
+                    // Safety: if we somehow have PlayerMovementInput but never entered control, reset it
+                    System.out.println("[Baritone] Safety: Replacing PlayerMovementInput with KeyboardInput");
+                    ctx.player().input = new KeyboardInput(ctx.minecraft().options);
+                }
             }
+            // only set it if it was previously incorrect
+            // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
         }
-        // if we are not primary (a bot) we should set the movementinput even when idle (not pathing)
-        return baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
-    }
+
+        private boolean inControl() {
+            for (Input input : new Input[]{Input.MOVE_FORWARD, Input.MOVE_BACK, Input.MOVE_LEFT, Input.MOVE_RIGHT, Input.SNEAK, Input.JUMP}) {
+                if (isInputForcedDown(input)) {
+                    return true;
+                }
+            }
+            // if we are not primary (a bot) we should set the movementinput even when idle (not pathing)
+            return baritone.getPathingBehavior().isPathing() || baritone != BaritoneAPI.getProvider().getPrimaryBaritone();
+        }
 
     public BlockBreakHelper getBlockBreakHelper() {
         return blockBreakHelper;
