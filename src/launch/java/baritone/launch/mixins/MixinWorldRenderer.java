@@ -20,13 +20,16 @@ package baritone.launch.mixins;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.event.events.RenderEvent;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -44,14 +47,13 @@ public class MixinWorldRenderer {
             at = @At("RETURN")
     )
     private void onStartHand(GraphicsResourceAllocator allocator, DeltaTracker deltaTracker, boolean renderBlockOutline,
-                              CameraRenderState cameraRenderState, GameRenderer gameRenderer,
-                              Matrix4f frustumMatrix, Matrix4f projectionMatrix,
-                              org.joml.Vector4f gpuBufferSlice, boolean isShaders, CallbackInfo ci) {
+                              CameraRenderState cameraRenderState, Matrix4fc frustumMatrix,
+                              GpuBufferSlice gpuBufferSlice, Vector4f vector4f,
+                              boolean isShaders, ChunkSectionsToRender chunkSectionsToRender, CallbackInfo ci) {
         float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
         PoseStack modelViewStack = new PoseStack();
-        Matrix4f projection = new Matrix4f(projectionMatrix);
         for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewStack, projection));
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewStack, new Matrix4f(frustumMatrix)));
         }
     }
 }
