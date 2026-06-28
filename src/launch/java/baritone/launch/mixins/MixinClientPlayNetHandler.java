@@ -79,8 +79,7 @@ public class MixinClientPlayNetHandler {
     }*/
 
     @Shadow
-    @Final
-    private Minecraft minecraft;
+    protected Minecraft minecraft;
 
     @Inject(
             method = "sendChat(Ljava/lang/String;)V",
