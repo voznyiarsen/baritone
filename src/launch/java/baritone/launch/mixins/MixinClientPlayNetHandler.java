@@ -37,7 +37,6 @@ import net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -54,32 +53,8 @@ import java.util.List;
 @Mixin(ClientPacketListener.class)
 public class MixinClientPlayNetHandler {
 
-    // unused lol
-    /*@Inject(
-            method = "handleChunkData",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/multiplayer/ChunkProviderClient.func_212474_a(IILnet/minecraft/network/PacketBuffer;IZ)Lnet/minecraft/world/chunk/Chunk;"
-            )
-    )
-    private void preRead(SPacketChunkData packetIn, CallbackInfo ci) {
-        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
-            ClientPlayerEntity player = ibaritone.getPlayerContext().player();
-            if (player != null && player.connection == (ClientPlayNetHandler) (Object) this) {
-                ibaritone.getGameEventHandler().onChunkEvent(
-                        new ChunkEvent(
-                                EventState.PRE,
-                                packetIn.isFullChunk() ? ChunkEvent.Type.POPULATE_FULL : ChunkEvent.Type.POPULATE_PARTIAL,
-                                packetIn.getChunkX(),
-                                packetIn.getChunkZ()
-                        )
-                );
-            }
-        }
-    }*/
-
     @Shadow
-    protected Minecraft minecraft;
+    private Minecraft minecraft;
 
     @Inject(
             method = "sendChat(Ljava/lang/String;)V",
