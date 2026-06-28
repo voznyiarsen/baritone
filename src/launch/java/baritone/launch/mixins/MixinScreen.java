@@ -20,7 +20,6 @@ package baritone.launch.mixins;
 import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.net.URI;
 
@@ -28,6 +27,7 @@ import java.net.URI;
 public abstract class MixinScreen implements IGuiScreen {
 
     @Override
-    @Invoker("openLink")
-    public abstract void openLinkInvoker(URI url);
+    public void openLinkInvoker(URI url) {
+        // openLink removed in MC 26.1, no-op
+    }
 }
