@@ -98,6 +98,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
                 System.out.println("[Baritone] Replacing input with PlayerMovementInput, player.input class was " + ctx.player().input.getClass().getSimpleName());
                 ctx.player().input = new PlayerMovementInput(this);
             }
+            // Call tick() to update keyPresses and moveVector - in MC 26.1.2, tick() is NOT called automatically
+            ((PlayerMovementInput) ctx.player().input).tick();
         } else {
             if (ctx.player().input.getClass() == PlayerMovementInput.class) { // allow other movement inputs that aren't this one, e.g. for a freecam
                 System.out.println("[Baritone] Replacing PlayerMovementInput with KeyboardInput");
