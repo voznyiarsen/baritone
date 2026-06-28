@@ -72,6 +72,9 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
      */
     @Override
     public final void setInputForceState(Input input, boolean forced) {
+        if (forced && input == Input.MOVE_FORWARD) {
+            System.out.println("[Baritone] MOVE_FORWARD set to true by " + Thread.currentThread().getStackTrace()[2]);
+        }
         this.inputForceStateMap.put(input, forced);
     }
 
@@ -106,6 +109,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
                 ((PlayerMovementInput) ctx.player().input).tick();
                 wasInControl = true;
             } else {
+                // Clear all forced inputs when not in control to prevent stale inputs
+                clearAllKeys();
                 // Only switch back to KeyboardInput if we were never in control or if pathing has stopped
                 if (wasInControl && !baritone.getPathingBehavior().isPathing()) {
                     if (ctx.player().input.getClass() == PlayerMovementInput.class) {
