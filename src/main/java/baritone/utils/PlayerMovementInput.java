@@ -63,9 +63,6 @@ public class PlayerMovementInput extends net.minecraft.client.player.ClientInput
         }
         this.moveVector = new net.minecraft.world.phys.Vec2(leftImpulse, forwardImpulse);
 
-        if (!forward || !back || !left || !right || jump || sneak) {
-            LOGGER.debug("tick: keyPresses=[jump={},fwd={},back={},left={},right={},sneak={}], moveVec=({},{})",
-                jump, forward, back, left, right, sneak, leftImpulse, forwardImpulse);
-        }
+        System.out.println("[Baritone] PlayerMovementInput.tick: keyPresses=[jump=" + jump + ",fwd=" + forward + ",back=" + back + ",left=" + left + ",right=" + right + ",sneak=" + sneak + "], moveVec=(" + leftImpulse + "," + forwardImpulse + ")");
     }
 }
