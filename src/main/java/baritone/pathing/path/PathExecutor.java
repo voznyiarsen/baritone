@@ -222,7 +222,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             return true;
         }
         if (ctx.player().tickCount % 20 == 0) {
-            logDebug("onTick: pathPos=" + pathPosition + ", movement=" + movement.getClass().getSimpleName() + ", playerPos=" + ctx.playerFeet() + ", onGround=" + ctx.player().onGround());
+            logDebug("onTick: pathPos=" + pathPosition + ", pathLen=" + path.length() + ", movement=" + movement.getClass().getSimpleName() + ", playerPos=" + ctx.playerFeet() + ", goal=" + path.getDest() + ", onGround=" + ctx.player().onGround());
         }
         MovementStatus movementStatus = movement.update();
         if (ctx.player().tickCount % 20 == 0) {
