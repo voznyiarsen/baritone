@@ -20,6 +20,7 @@ package baritone.launch.mixins;
 import baritone.utils.PlayerMovementInput;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -28,9 +29,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * In MC 26.1.2, ClientInput.tick() is NOT called automatically.
  * This mixin ensures that PlayerMovementInput.tick() is called BEFORE applyInput()
  * so that the keyPresses and moveVector are set correctly.
+ * It also updates lastSentInput to prevent server anti-cheat from teleporting the player.
  */
 @Mixin(LocalPlayer.class)
-public class MixinLocalPlayer {
+public abstract class MixinLocalPlayer {
+
+    @Shadow
+    private net.minecraft.world.entity.player.Input lastSentInput;
 
     @Inject(
             method = "tick",
@@ -40,6 +45,8 @@ public class MixinLocalPlayer {
         LocalPlayer self = (LocalPlayer) (Object) this;
         if (self.input instanceof PlayerMovementInput) {
             ((PlayerMovementInput) self.input).tick();
+            // Update lastSentInput to match the current input so the server doesn't reject movement
+            this.lastSentInput = self.input.keyPresses;
         }
     }
 }
