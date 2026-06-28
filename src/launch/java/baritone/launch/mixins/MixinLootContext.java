@@ -17,27 +17,11 @@
 
 package baritone.launch.mixins;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.loot.LootContext;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LootContext.Builder.class)
 public class MixinLootContext {
-
-    @Redirect(
-            method = "create",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/level/ServerLevel.getServer()Lnet/minecraft/server/MinecraftServer;"
-            )
-    )
-    private MinecraftServer getServer(ServerLevel world) {
-        if (world == null) {
-            return null;
-        }
-        return world.getServer();
-    }
+    // Disabled for MC 26.1.2 - @At target descriptor parsing issue with mixin
+    // TODO: reimplement with correct target descriptor
 }
