@@ -17,23 +17,12 @@
 
 package baritone.launch.mixins;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.IBaritone;
-import baritone.api.event.events.ChatEvent;
 import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.ClickEvent.RunCommand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.net.URI;
-
-import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
 
 @Mixin(Screen.class)
 public abstract class MixinScreen implements IGuiScreen {
@@ -41,31 +30,4 @@ public abstract class MixinScreen implements IGuiScreen {
     @Override
     @Invoker("openLink")
     public abstract void openLinkInvoker(URI url);
-
-
-    //TODO: switch to enum extention with mixin 9.0 or whenever Mumfrey gets around to it
-    @Inject(at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;)V", remap = false, ordinal = 1), method = "handleTextClick", cancellable = true)
-    public void handleCustomClickEvent(Style style, CallbackInfoReturnable<Boolean> cir) {
-        ClickEvent clickEvent = style.getClickEvent();
-        if (clickEvent == null) {
-            return;
-        }
-        String command;
-        if (clickEvent instanceof RunCommand) {
-            command = ((RunCommand) clickEvent).command();
-        } else if (clickEvent.action() == ClickEvent.Action.SUGGEST_COMMAND) {
-            command = clickEvent.toString(); // fallback
-        } else {
-            return;
-        }
-        if (command == null || !command.startsWith(FORCE_COMMAND_PREFIX)) {
-            return;
-        }
-        IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
-        if (baritone != null) {
-            baritone.getGameEventHandler().onSendChatMessage(new ChatEvent(command));
-        }
-        cir.setReturnValue(true);
-        cir.cancel();
-    }
 }
