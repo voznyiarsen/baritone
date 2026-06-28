@@ -511,15 +511,13 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
                 Optional<PathExecutor> executor = calcResult.getPath().map(p -> new PathExecutor(PathingBehavior.this, p));
                 if (current == null) {
                     if (executor.isPresent()) {
-                        if (executor.get().getPath().positions().contains(expectedSegmentStart)) {
-                            queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
-                            current = executor.get();
-                            logDebug("Path assigned to current: src=" + current.getPath().getSrc() + ", dest=" + current.getPath().getDest() + ", pathLen=" + current.getPath().length() + ", playerFeet=" + ctx.playerFeet() + ", expectedSegmentStart=" + expectedSegmentStart);
-                            logDebug("Path first 3 positions: " + current.getPath().positions().subList(0, Math.min(3, current.getPath().length())));
-                            resetEstimatedTicksToGoal(start);
-                        } else {
-                            logDebug("Warning: discarding orphan path segment with incorrect start");
-                        }
+                        // Accept the path even if the player has moved since calculation started
+                        // The path is still valid, just start from where the player is now
+                        queuePathEvent(PathEvent.CALC_FINISHED_NOW_EXECUTING);
+                        current = executor.get();
+                        logDebug("Path assigned to current: src=" + current.getPath().getSrc() + ", dest=" + current.getPath().getDest() + ", pathLen=" + current.getPath().length() + ", playerFeet=" + ctx.playerFeet() + ", expectedSegmentStart=" + expectedSegmentStart);
+                        logDebug("Path first 3 positions: " + current.getPath().positions().subList(0, Math.min(3, current.getPath().length())));
+                        resetEstimatedTicksToGoal(start);
                     } else {
                         if (calcResult.getType() != PathCalculationResult.Type.CANCELLATION && calcResult.getType() != PathCalculationResult.Type.EXCEPTION) {
                             // don't dispatch CALC_FAILED on cancellation
