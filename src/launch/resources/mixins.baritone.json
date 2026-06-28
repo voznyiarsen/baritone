@@ -26,6 +26,7 @@
     "MixinPlayerController",
     "MixinScreen",
     "MixinWorldRenderer",
+    "MixinLocalPlayer",
     "IClientCommonPacketListenerImpl"
   ]
 }
