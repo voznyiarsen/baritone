@@ -39,14 +39,25 @@ public abstract class MixinLocalPlayer {
 
     @Inject(
             method = "tick",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;tick()V", shift = At.Shift.AFTER)
+    )
+    private void onTickAfterAbstract(CallbackInfo ci) {
+        LocalPlayer self = (LocalPlayer) (Object) this;
+        if (self.input instanceof PlayerMovementInput) {
+            // Update lastSentInput to match the current input so the server doesn't reject movement
+            // This must be done AFTER AbstractClientPlayer.tick() which calls applyInput()
+            this.lastSentInput = self.input.keyPresses;
+        }
+    }
+
+    @Inject(
+            method = "tick",
             at = @At("HEAD")
     )
     private void onTickHead(CallbackInfo ci) {
         LocalPlayer self = (LocalPlayer) (Object) this;
         if (self.input instanceof PlayerMovementInput) {
             ((PlayerMovementInput) self.input).tick();
-            // Update lastSentInput to match the current input so the server doesn't reject movement
-            this.lastSentInput = self.input.keyPresses;
         }
     }
 }
