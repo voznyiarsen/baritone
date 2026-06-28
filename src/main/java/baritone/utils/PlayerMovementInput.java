@@ -18,9 +18,12 @@
 package baritone.utils;
 
 import baritone.api.utils.input.Input;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PlayerMovementInput extends net.minecraft.client.player.ClientInput {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger("Baritone/PlayerMovementInput");
     private final InputOverrideHandler handler;
 
     PlayerMovementInput(InputOverrideHandler handler) {
@@ -29,14 +32,15 @@ public class PlayerMovementInput extends net.minecraft.client.player.ClientInput
 
     @Override
     public void tick() {
+        boolean jump = handler.isInputForcedDown(Input.JUMP);
+        boolean forward = handler.isInputForcedDown(Input.MOVE_FORWARD);
+        boolean back = handler.isInputForcedDown(Input.MOVE_BACK);
+        boolean left = handler.isInputForcedDown(Input.MOVE_LEFT);
+        boolean right = handler.isInputForcedDown(Input.MOVE_RIGHT);
+        boolean sneak = handler.isInputForcedDown(Input.SNEAK);
+
         this.keyPresses = new net.minecraft.world.entity.player.Input(
-            handler.isInputForcedDown(Input.JUMP),
-            handler.isInputForcedDown(Input.MOVE_FORWARD),
-            handler.isInputForcedDown(Input.MOVE_BACK),
-            handler.isInputForcedDown(Input.MOVE_LEFT),
-            handler.isInputForcedDown(Input.MOVE_RIGHT),
-            handler.isInputForcedDown(Input.SNEAK),
-            false
+            jump, forward, back, left, right, sneak, false
         );
         float forwardImpulse = 0.0F;
         float leftImpulse = 0.0F;
@@ -58,5 +62,10 @@ public class PlayerMovementInput extends net.minecraft.client.player.ClientInput
             forwardImpulse *= 0.3D;
         }
         this.moveVector = new net.minecraft.world.phys.Vec2(leftImpulse, forwardImpulse);
+
+        if (!forward || !back || !left || !right || jump || sneak) {
+            LOGGER.debug("tick: keyPresses=[jump={},fwd={},back={},left={},right={},sneak={}], moveVec=({},{})",
+                jump, forward, back, left, right, sneak, leftImpulse, forwardImpulse);
+        }
     }
 }

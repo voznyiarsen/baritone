@@ -221,7 +221,13 @@ public class PathExecutor implements IPathExecutor, Helper {
             clearKeys();
             return true;
         }
+        if (ctx.player().tickCount % 20 == 0) {
+            logDebug("onTick: pathPos=" + pathPosition + ", movement=" + movement.getClass().getSimpleName() + ", playerPos=" + ctx.playerFeet() + ", onGround=" + ctx.player().onGround());
+        }
         MovementStatus movementStatus = movement.update();
+        if (ctx.player().tickCount % 20 == 0) {
+            logDebug("onTick: movementStatus=" + movementStatus + ", isPathing=" + behavior.baritone.getPathingBehavior().isPathing());
+        }
         if (movementStatus == UNREACHABLE || movementStatus == FAILED) {
             logDebug("Movement returns status " + movementStatus);
             cancel();

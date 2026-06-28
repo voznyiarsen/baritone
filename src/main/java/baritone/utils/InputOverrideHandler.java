@@ -95,10 +95,12 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
         if (inControl()) {
             if (ctx.player().input.getClass() != PlayerMovementInput.class) {
+                System.out.println("[Baritone] Replacing input with PlayerMovementInput, player.input class was " + ctx.player().input.getClass().getSimpleName());
                 ctx.player().input = new PlayerMovementInput(this);
             }
         } else {
             if (ctx.player().input.getClass() == PlayerMovementInput.class) { // allow other movement inputs that aren't this one, e.g. for a freecam
+                System.out.println("[Baritone] Replacing PlayerMovementInput with KeyboardInput");
                 ctx.player().input = new KeyboardInput(ctx.minecraft().options);
             }
         }
