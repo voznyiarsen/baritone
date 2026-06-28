@@ -20,8 +20,11 @@ package baritone.launch.mixins;
 import net.minecraft.world.level.storage.loot.LootContext;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(LootContext.Builder.class)
+/**
+ * LootContext no longer uses Builder pattern in MC 26.1.2.
+ * The getLevel() method is now directly available on LootContext.
+ */
+@Mixin(LootContext.class)
 public class MixinLootContext {
-    // Disabled for MC 26.1.2 - @At target descriptor parsing issue with mixin
-    // TODO: reimplement with correct target descriptor
+    // No longer needed - LootContext.getLevel() handles null safety in MC 26.1.2
 }

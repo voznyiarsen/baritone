@@ -18,15 +18,23 @@
 package baritone.launch.mixins;
 
 import baritone.api.utils.accessor.IItemStack;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack implements IItemStack {
 
+    @Shadow
+    private Holder<Item> item;
+
+    @Shadow
+    public abstract int getDamageValue();
+
     @Override
     public int getBaritoneHash() {
-        // simplified for MC 26.1.2 - item field is now Holder<Item>
-        return System.identityHashCode(this);
+        return item == null ? -1 : item.value().hashCode() + getDamageValue();
     }
 }

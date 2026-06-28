@@ -17,8 +17,20 @@
 
 package baritone.launch.mixins;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
+import baritone.api.event.events.RenderEvent;
+import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Brady
@@ -26,6 +38,20 @@ import org.spongepowered.asm.mixin.Mixin;
  */
 @Mixin(LevelRenderer.class)
 public class MixinWorldRenderer {
-    // renderLevel signature changed significantly in MC 26.1.2 (9 params instead of 4)
-    // TODO: reimplement render hook using new LevelRenderer API
+
+    @Inject(
+            method = "renderLevel",
+            at = @At("RETURN")
+    )
+    private void onStartHand(GraphicsResourceAllocator allocator, DeltaTracker deltaTracker, boolean renderBlockOutline,
+                              CameraRenderState cameraRenderState, GameRenderer gameRenderer,
+                              Matrix4f frustumMatrix, Matrix4f projectionMatrix,
+                              org.joml.Vector4f gpuBufferSlice, boolean isShaders, CallbackInfo ci) {
+        float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+        PoseStack modelViewStack = new PoseStack();
+        Matrix4f projection = new Matrix4f(projectionMatrix);
+        for (IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
+            ibaritone.getGameEventHandler().onRenderPass(new RenderEvent(partialTicks, modelViewStack, projection));
+        }
+    }
 }
