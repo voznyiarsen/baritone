@@ -54,6 +54,7 @@ processResources {
 
 jar {
     from sourceSets.main.output
+    from rootProject.sourceSets.main.output
     from rootProject.sourceSets.api.output
     from rootProject.sourceSets.launch.output
     from project.configurations.runtimeClasspath.filter { it.isFile() }
@@ -62,6 +63,7 @@ jar {
 
 task devJar(type: Jar) {
     from sourceSets.main.output
+    from rootProject.sourceSets.main.output
     from rootProject.sourceSets.api.output
     from rootProject.sourceSets.launch.output
     archiveClassifier.set "dev"
@@ -69,6 +71,7 @@ task devJar(type: Jar) {
 
 task shadowJar(type: Jar) {
     from sourceSets.main.output
+    from rootProject.sourceSets.main.output
     from rootProject.sourceSets.api.output
     from rootProject.sourceSets.launch.output
     from project.configurations.runtimeClasspath.filter { it.isFile() }
