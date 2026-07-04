@@ -39,11 +39,12 @@ public class BaritoneDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
 
     @Override
     public void emitGizmos(double cameraX, double cameraY, double cameraZ, DebugValueAccess debugValueAccess, Frustum frustum, float partialTicks) {
-        System.out.println("[Baritone] BaritoneDebugRenderer.emitGizmos camera=(" + cameraX + "," + cameraY + "," + cameraZ + ") partialTicks=" + partialTicks);
         for (baritone.api.IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             PathingBehavior behavior = (PathingBehavior) ibaritone.getPathingBehavior();
             if (behavior != null && behavior.ctx != null && behavior.ctx.world() != null) {
-                System.out.println("[Baritone] Rendering baritone, goal=" + behavior.getGoal() + ", playerFeet=" + behavior.ctx.playerFeet());
+                if (behavior.getGoal() == null && behavior.getCurrent() == null && behavior.getNext() == null && !behavior.getInProgress().isPresent()) {
+                    continue;
+                }
                 PathRenderer.render(cameraX, cameraY, cameraZ, behavior, partialTicks);
             }
         }

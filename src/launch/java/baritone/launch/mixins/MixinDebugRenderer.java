@@ -44,11 +44,8 @@ public class MixinDebugRenderer {
             at = @At("RETURN")
     )
     private void onRefreshRendererList(CallbackInfo ci) {
-        System.out.println("[Baritone] MixinDebugRenderer.onRefreshRendererList called");
-        // Add our Baritone debug renderer after the list is rebuilt
         if (!this.renderers.contains(BaritoneDebugRenderer.INSTANCE)) {
             this.renderers.add(BaritoneDebugRenderer.INSTANCE);
-            System.out.println("[Baritone] Added BaritoneDebugRenderer to renderers list");
         }
     }
 
@@ -57,16 +54,11 @@ public class MixinDebugRenderer {
             at = @At("RETURN")
     )
     private void onEmitGizmos(Frustum frustum, double cameraX, double cameraY, double cameraZ, float partialTicks, CallbackInfo ci) {
-        System.out.println("[Baritone] MixinDebugRenderer.onEmitGizmos called");
-        // Get the DebugValueAccess from the connection
         net.minecraft.client.multiplayer.ClientPacketListener connection = net.minecraft.client.Minecraft.getInstance().getConnection();
         if (connection == null) {
-            System.out.println("[Baritone] MixinDebugRenderer: connection is null, skipping");
             return;
         }
         DebugValueAccess debugValueAccess = connection.createDebugValueAccess();
-
-        // Call our BaritoneDebugRenderer
         BaritoneDebugRenderer.INSTANCE.emitGizmos(cameraX, cameraY, cameraZ, debugValueAccess, frustum, partialTicks);
     }
 }

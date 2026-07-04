@@ -112,10 +112,6 @@ public final class PathRenderer implements IRenderer {
         PathExecutor current = behavior.getCurrent(); // this should prevent most race conditions?
         PathExecutor next = behavior.getNext(); // like, now it's not possible for current!=null to be true, then suddenly false because of another thread
         if (current != null && settings.renderSelectionBoxes.value) {
-            System.out.println("[Baritone] Drawing selection boxes: break=" + current.toBreak().size() + ", place=" + current.toPlace().size() + ", walkInto=" + current.toWalkInto().size());
-            if (!current.toBreak().isEmpty()) {
-                System.out.println("[Baritone]   first break pos: " + current.toBreak().iterator().next());
-            }
             drawManySelectionBoxes(cameraX, cameraY, cameraZ, ctx.player(), current.toBreak(), settings.colorBlocksToBreak.value);
             drawManySelectionBoxes(cameraX, cameraY, cameraZ, ctx.player(), current.toPlace(), settings.colorBlocksToPlace.value);
             drawManySelectionBoxes(cameraX, cameraY, cameraZ, ctx.player(), current.toWalkInto(), settings.colorBlocksToWalkInto.value);
@@ -324,11 +320,7 @@ public final class PathRenderer implements IRenderer {
             BlockState state = bsi.get0(pos);
             VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
-            System.out.println("[Baritone] shape.bounds() for pos " + pos + " = " + toDraw.minX + "," + toDraw.minY + "," + toDraw.minZ + " -> " + toDraw.maxX + "," + toDraw.maxY + "," + toDraw.maxZ);
-            // In MC 26.1.2, shape.bounds() returns bounds centered on block center (0.5 offset)
-            // We need to subtract 0.5 to get the correct block-aligned bounds
             toDraw = toDraw.move(pos.getX() - 0.5, pos.getY() - 0.5, pos.getZ() - 0.5);
-            System.out.println("[Baritone] after move = " + toDraw.minX + "," + toDraw.minY + "," + toDraw.minZ + " -> " + toDraw.maxX + "," + toDraw.maxY + "," + toDraw.maxZ);
             // Inflate slightly to avoid z-fighting
             toDraw = toDraw.inflate(0.002);
             // Draw the 12 edges of the cuboid using lines
