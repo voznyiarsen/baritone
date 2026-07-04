@@ -26,6 +26,7 @@ unimined.minecraft {
     fabric {
         loader project.fabric_version
     }
+    defaultRemapJar = false
 }
 
 configurations {
@@ -84,8 +85,8 @@ components.java {
     }
 }
 
-task proguard(type: ProguardTask) {
-    proguardVersion "7.2.1"
+task proguard(type: ProguardTask, dependsOn: jar) {
+    proguardVersion "7.9.1"
     compType "fabric"
 }
 

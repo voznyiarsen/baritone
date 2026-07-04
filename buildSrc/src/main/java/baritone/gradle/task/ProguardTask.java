@@ -39,6 +39,7 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,9 +144,15 @@ public class ProguardTask extends BaritoneGradleTask {
         template.add(0, "-injars '" + this.artifactPath.toString() + "'");
         template.add(1, "-outjars '" + this.getTemporaryFile(PROGUARD_EXPORT_PATH) + "'");
 
-        template.add(2, "-libraryjars  <java.home>/jmods/java.base.jmod(!**.jar;!module-info.class)");
-        template.add(3, "-libraryjars  <java.home>/jmods/java.desktop.jmod(!**.jar;!module-info.class)");
-        template.add(4, "-libraryjars  <java.home>/jmods/jdk.unsupported.jmod(!**.jar;!module-info.class)");
+        Path javaHome = Paths.get(System.getProperty("java.home"));
+        Path jmodsDir = javaHome.resolve("jmods");
+        if (Files.isDirectory(jmodsDir)) {
+            template.add(2, "-libraryjars  " + jmodsDir.resolve("java.base.jmod") + "(!**.jar;!module-info.class)");
+            template.add(3, "-libraryjars  " + jmodsDir.resolve("java.desktop.jmod") + "(!**.jar;!module-info.class)");
+            template.add(4, "-libraryjars  " + jmodsDir.resolve("jdk.unsupported.jmod") + "(!**.jar;!module-info.class)");
+        } else {
+            template.add(2, "-libraryjars  <java.home>/lib/jrt-fs.jar");
+        }
 
         {
             final Stream<File> libraries;
