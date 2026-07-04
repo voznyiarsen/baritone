@@ -76,14 +76,12 @@ public interface IRenderer {
                          float x1, float y1, float z1,
                          float x2, float y2, float z2,
                          float nx, float ny, float nz) {
-        System.out.println("[Baritone] emitLine(" + x1 + "," + y1 + "," + z1 + " -> " + x2 + "," + y2 + "," + z2 + ")");
         Gizmos.line(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2), packColor());
     }
 
     static void emitLine(PoseStack stack,
                          double x1, double y1, double z1,
                          double x2, double y2, double z2) {
-        System.out.println("[Baritone] emitLine(" + x1 + "," + y1 + "," + z1 + " -> " + x2 + "," + y2 + "," + z2 + ")");
         Gizmos.line(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2), packColor());
     }
 
@@ -91,7 +89,6 @@ public interface IRenderer {
                          double x1, double y1, double z1,
                          double x2, double y2, double z2,
                          double nx, double ny, double nz) {
-        System.out.println("[Baritone] emitLine(" + x1 + "," + y1 + "," + z1 + " -> " + x2 + "," + y2 + "," + z2 + ")");
         Gizmos.line(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2), packColor());
     }
 
@@ -101,14 +98,12 @@ public interface IRenderer {
 
     static void emitAABB(PoseStack stack, AABB aabb, double expand) {
         AABB toDraw = aabb.inflate(expand, expand, expand);
-        System.out.println("[Baritone] emitAABB(" + toDraw.minX + "," + toDraw.minY + "," + toDraw.minZ + " -> " + toDraw.maxX + "," + toDraw.maxY + "," + toDraw.maxZ + ")");
         int strokeColor = packColor();
         GizmoStyle style = GizmoStyle.stroke(strokeColor, 1.0f);
         Gizmos.cuboid(toDraw, style);
     }
 
     static void emitLine(PoseStack stack, Vec3 start, Vec3 end) {
-        System.out.println("[Baritone] emitLine(Vec3 " + start + " -> " + end + ")");
         Gizmos.line(start, end, packColor());
     }
 

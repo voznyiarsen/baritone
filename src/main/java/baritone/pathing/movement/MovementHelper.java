@@ -28,6 +28,7 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementState.MovementTarget;
 import baritone.pathing.precompute.Ternary;
 import baritone.utils.BlockStateInterface;
+import baritone.utils.RateLimitedLogger;
 import baritone.utils.ToolSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -190,7 +191,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 return NO;
             }
         } catch (Throwable exception) {
-            System.out.println("The block " + state.getBlock().getName().getString() + " requires a special case due to the exception " + exception.getMessage());
+            RateLimitedLogger.println("MovementHelper.canWalkOn(" + state.getBlock().getName().getString() + ")",
+                    "The block " + state.getBlock().getName().getString() + " requires a special case due to the exception " + exception.getMessage());
             return MAYBE;
         }
     }
@@ -273,7 +275,8 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
         } catch (Throwable exception) {
             // see PR #1087 for why
-            System.out.println("The block " + state.getBlock().getName().getString() + " requires a special case due to the exception " + exception.getMessage());
+            RateLimitedLogger.println("MovementHelper.canWalkThrough(" + state.getBlock().getName().getString() + ")",
+                    "The block " + state.getBlock().getName().getString() + " requires a special case due to the exception " + exception.getMessage());
             return MAYBE;
         }
     }

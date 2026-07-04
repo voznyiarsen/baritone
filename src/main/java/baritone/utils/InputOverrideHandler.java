@@ -73,7 +73,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     @Override
     public final void setInputForceState(Input input, boolean forced) {
         if (forced && input == Input.MOVE_FORWARD) {
-            System.out.println("[Baritone] MOVE_FORWARD set to true by " + Thread.currentThread().getStackTrace()[2]);
+            RateLimitedLogger.println("MOVE_FORWARD",
+                    "[Baritone] MOVE_FORWARD set to true by " + Thread.currentThread().getStackTrace()[2]);
         }
         this.inputForceStateMap.put(input, forced);
     }
@@ -102,7 +103,8 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
 
             if (shouldControl) {
                 if (ctx.player().input.getClass() != PlayerMovementInput.class) {
-                    System.out.println("[Baritone] Replacing input with PlayerMovementInput, player.input class was " + ctx.player().input.getClass().getSimpleName());
+                    RateLimitedLogger.println("ReplaceInput",
+                            "[Baritone] Replacing input with PlayerMovementInput, player.input class was " + ctx.player().input.getClass().getSimpleName());
                     ctx.player().input = new PlayerMovementInput(this);
                 }
                 // Call tick() to update keyPresses and moveVector - in MC 26.1.2, tick() is NOT called automatically
@@ -114,13 +116,15 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
                 // Only switch back to KeyboardInput if we were never in control or if pathing has stopped
                 if (wasInControl && !baritone.getPathingBehavior().isPathing()) {
                     if (ctx.player().input.getClass() == PlayerMovementInput.class) {
-                        System.out.println("[Baritone] Replacing PlayerMovementInput with KeyboardInput (pathing stopped)");
+                        RateLimitedLogger.println("RestoreInput",
+                                "[Baritone] Replacing PlayerMovementInput with KeyboardInput (pathing stopped)");
                         ctx.player().input = new KeyboardInput(ctx.minecraft().options);
                     }
                     wasInControl = false;
                 } else if (!wasInControl && ctx.player().input.getClass() == PlayerMovementInput.class) {
                     // Safety: if we somehow have PlayerMovementInput but never entered control, reset it
-                    System.out.println("[Baritone] Safety: Replacing PlayerMovementInput with KeyboardInput");
+                    RateLimitedLogger.println("SafetyRestoreInput",
+                            "[Baritone] Safety: Replacing PlayerMovementInput with KeyboardInput");
                     ctx.player().input = new KeyboardInput(ctx.minecraft().options);
                 }
             }
