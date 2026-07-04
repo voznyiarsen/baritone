@@ -65,7 +65,7 @@ public final class FarmProcess extends BaritoneProcessHelper implements IFarmPro
 
     private boolean active;
 
-    private List<BlockPos> locations;
+    private volatile List<BlockPos> locations;
     private int tickCount;
 
     private int range;

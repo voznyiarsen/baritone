@@ -320,7 +320,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
                     else if (bs == Blocks.RED_MUSHROOM.defaultBlockState()) redMushroomId = i;
                     else if (bs == Blocks.BROWN_MUSHROOM.defaultBlockState()) brownMushroomId = i;
                 }
-                if (airId == -1 & caveAirId == -1) {
+                if (airId == -1 && caveAirId == -1) {
                     final long bytesInSection = SECTION_SIZE / 8;
                     UNSAFE.setMemory(chunkPtr + (y0 * bytesInSection), bytesInSection, (byte) 0xFF);
                     continue;
@@ -343,7 +343,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
                         int z = ((idx >> 4) & 15);
 
                         // Avoid unnecessary writes that may trigger a page allocation
-                        if (!(value == airId | value == caveAirId) & value != redMushroomId & value != brownMushroomId) {
+                        if (!(value == airId || value == caveAirId) && value != redMushroomId && value != brownMushroomId) {
                             Octree.setBlock(chunkPtr, x, y, z, true);
                         }
                     }

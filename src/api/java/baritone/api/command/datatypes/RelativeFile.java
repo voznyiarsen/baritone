@@ -47,7 +47,13 @@ public enum RelativeFile implements IDatatypePost<File, File> {
         } catch (InvalidPathException e) {
             throw new IllegalArgumentException("invalid path");
         }
-        return getCanonicalFileUnchecked(original.toPath().resolve(path).toFile());
+        File resolved = getCanonicalFileUnchecked(original.toPath().resolve(path).toFile());
+        String resolvedPath = resolved.getPath();
+        String basePath = getCanonicalFileUnchecked(original).getPath();
+        if (!resolvedPath.startsWith(basePath + File.separator) && !resolvedPath.equals(basePath)) {
+            throw new IllegalArgumentException("path traversal denied");
+        }
+        return resolved;
     }
 
     @Override

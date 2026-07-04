@@ -42,6 +42,7 @@ import baritone.process.elytra.*;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.PathingCommandContext;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.concurrent.TimeUnit;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -756,7 +757,7 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
                 BetterBlockPos actualLandingSpot = checkLandingSpot(pos, this.checkedPositions);
                 if (actualLandingSpot != null) {
                     landingColumnHeight = ctx.playerFeet().y - actualLandingSpot.y < LONG_LANDING_COLUMN_HEIGHT ? SHORT_LANDING_COLUMN_HEIGHT : LONG_LANDING_COLUMN_HEIGHT;
-                    if (hasAirBubble(actualLandingSpot.above(landingColumnHeight)) && !badLandingSpots.contains(actualLandingSpot.above(landingColumnHeight))) {
+                    if (isColumnAir(actualLandingSpot, landingColumnHeight) && hasAirBubble(actualLandingSpot.above(landingColumnHeight)) && !badLandingSpots.contains(actualLandingSpot.above(landingColumnHeight))) {
                         return actualLandingSpot.above(landingColumnHeight);
                     }
                 }
@@ -771,7 +772,15 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
 
     private NetherPathfinderContext getNpfContext() {
         if(this.npfContext == null) {
-            npfSema.acquireUninterruptibly();
+            try {
+                if (!npfSema.tryAcquire(5, TimeUnit.SECONDS)) {
+                    logDirect("Timed out waiting for pathfinder context creation");
+                    return null;
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
             this.npfContext = new NetherPathfinderContext(
                     Baritone.settings().elytraNetherSeed.value,
                     Baritone.settings().elytraUseCache.value ? baritone.getWorldProvider().getCurrentWorld().directory.resolve("cache") : null,

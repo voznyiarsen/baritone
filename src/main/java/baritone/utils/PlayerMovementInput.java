@@ -39,8 +39,9 @@ public class PlayerMovementInput extends net.minecraft.client.player.ClientInput
         boolean right = handler.isInputForcedDown(Input.MOVE_RIGHT);
         boolean sneak = handler.isInputForcedDown(Input.SNEAK);
 
+        // MC 26.1.2 Input record: (forward, backward, left, right, jump, shift, sprint)
         this.keyPresses = new net.minecraft.world.entity.player.Input(
-            jump, forward, back, left, right, sneak, false
+            forward, back, left, right, jump, sneak, false
         );
         float forwardImpulse = 0.0F;
         float leftImpulse = 0.0F;
@@ -61,7 +62,7 @@ public class PlayerMovementInput extends net.minecraft.client.player.ClientInput
             leftImpulse *= 0.3D;
             forwardImpulse *= 0.3D;
         }
-        this.moveVector = new net.minecraft.world.phys.Vec2(leftImpulse, forwardImpulse);
+        this.moveVector = new net.minecraft.world.phys.Vec2(leftImpulse, forwardImpulse).normalized();
 
         System.out.println("[Baritone] PlayerMovementInput.tick: keyPresses=[jump=" + jump + ",fwd=" + forward + ",back=" + back + ",left=" + left + ",right=" + right + ",sneak=" + sneak + "], moveVec=(" + leftImpulse + "," + forwardImpulse + ")");
     }

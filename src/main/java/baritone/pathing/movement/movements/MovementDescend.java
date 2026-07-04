@@ -42,7 +42,7 @@ import java.util.Set;
 public class MovementDescend extends Movement {
 
     private int numTicks = 0;
-    public boolean forceSafeMode = false;
+    private boolean forceSafeMode = false;
 
     public MovementDescend(IBaritone baritone, BetterBlockPos start, BetterBlockPos end) {
         super(baritone, start, end, new BetterBlockPos[]{end.above(2), end.above(), end}, end.below());
@@ -146,7 +146,8 @@ public class MovementDescend extends Movement {
         }
         double costSoFar = 0;
         int effectiveStartHeight = y;
-        for (int fallHeight = 3; true; fallHeight++) {
+        int maxFallHeight = Math.min(y - context.world.getMinY(), FALL_N_BLOCKS_COST.length - 1);
+        for (int fallHeight = 3; fallHeight <= maxFallHeight; fallHeight++) {
             int newY = y - fallHeight;
             if (newY < context.world.getMinY()) {
                 // when pathing in the end, where you could plausibly fall into the void
@@ -156,7 +157,8 @@ public class MovementDescend extends Movement {
             boolean reachedMinimum = fallHeight >= context.minFallHeight;
             BlockState ontoBlock = context.get(destX, newY, destZ);
             int unprotectedFallHeight = fallHeight - (y - effectiveStartHeight); // equal to fallHeight - y + effectiveFallHeight, which is equal to -newY + effectiveFallHeight, which is equal to effectiveFallHeight - newY
-            double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[unprotectedFallHeight] + frontBreak + costSoFar;
+            int fallIndex = Math.min(unprotectedFallHeight, FALL_N_BLOCKS_COST.length - 1);
+            double tentativeCost = WALK_OFF_BLOCK_COST + FALL_N_BLOCKS_COST[fallIndex] + frontBreak + costSoFar;
             if (reachedMinimum && MovementHelper.isWater(ontoBlock)) {
                 if (!MovementHelper.canWalkThrough(context, destX, newY, destZ, ontoBlock)) {
                     return false;
@@ -221,6 +223,7 @@ public class MovementDescend extends Movement {
                 return false;
             }
         }
+        return false;
     }
 
     @Override

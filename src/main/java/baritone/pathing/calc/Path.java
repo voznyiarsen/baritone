@@ -19,6 +19,7 @@ package baritone.pathing.calc;
 
 import baritone.api.pathing.calc.IPath;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.movement.ActionCosts;
 import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.Helper;
@@ -112,10 +113,13 @@ class Path extends PathBase {
 
     private boolean assembleMovements() {
         if (path.isEmpty() || !movements.isEmpty()) {
-            throw new IllegalStateException("Path must not be empty");
+            throw new IllegalStateException("Path must not be empty, and movements must be empty before assembly");
+        }
+        if (path.size() <= 1) {
+            return false;
         }
         for (int i = 0; i < path.size() - 1; i++) {
-            double cost = nodes.get(i + 1).cost - nodes.get(i).cost;
+            double cost = Math.max(nodes.get(i + 1).cost - nodes.get(i).cost, ActionCosts.WALK_ONE_BLOCK_COST * 0.01);
             Movement move = runBackwards(path.get(i), path.get(i + 1), cost);
             if (move == null) {
                 return true;

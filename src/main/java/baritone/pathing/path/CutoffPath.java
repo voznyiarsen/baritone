@@ -23,6 +23,7 @@ import baritone.api.pathing.movement.IMovement;
 import baritone.api.utils.BetterBlockPos;
 import baritone.utils.pathing.PathBase;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,8 +38,8 @@ public class CutoffPath extends PathBase {
     private final Goal goal;
 
     public CutoffPath(IPath prev, int firstPositionToInclude, int lastPositionToInclude) {
-        path = prev.positions().subList(firstPositionToInclude, lastPositionToInclude + 1);
-        movements = prev.movements().subList(firstPositionToInclude, lastPositionToInclude);
+        path = new ArrayList<>(prev.positions().subList(firstPositionToInclude, lastPositionToInclude + 1));
+        movements = new ArrayList<>(prev.movements().subList(firstPositionToInclude, lastPositionToInclude));
         numNodes = prev.getNumNodesConsidered();
         goal = prev.getGoal();
         sanityCheck();

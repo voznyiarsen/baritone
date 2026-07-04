@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -42,7 +42,13 @@ import java.util.Optional;
  */
 public class WorldProvider implements IWorldProvider {
 
-    private static final Map<Path, WorldData> worldCache = new HashMap<>();
+    private static final int MAX_WORLDS = 5;
+    private static final Map<Path, WorldData> worldCache = new LinkedHashMap<Path, WorldData>(MAX_WORLDS + 1, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Path, WorldData> eldest) {
+            return size() > MAX_WORLDS;
+        }
+    };
 
     private final Baritone baritone;
     private final IPlayerContext ctx;

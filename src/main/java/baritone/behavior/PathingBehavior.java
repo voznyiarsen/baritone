@@ -568,12 +568,12 @@ public final class PathingBehavior extends Behavior implements IPathingBehavior,
         BetterBlockPos feet = ctx.playerFeet();
         var realStart = new BetterBlockPos(start);
         var sub = feet.subtract(realStart);
-        System.out.println("[Baritone] createPathfinder: start=" + start + ", playerFeet=" + feet + ", diff=" + sub + ", sameY=" + (feet.getY() == realStart.getY()) + ", dx=" + Math.abs(sub.getX()) + ", dz=" + Math.abs(sub.getZ()));
+        logDebug("createPathfinder: start=" + start + ", playerFeet=" + feet + ", diff=" + sub + ", sameY=" + (feet.getY() == realStart.getY()) + ", dx=" + Math.abs(sub.getX()) + ", dz=" + Math.abs(sub.getZ()));
         if (feet.getY() == realStart.getY() && Math.abs(sub.getX()) <= 1 && Math.abs(sub.getZ()) <= 1) {
-            System.out.println("[Baritone] createPathfinder: adjusting realStart from " + realStart + " to playerFeet " + feet);
+            logDebug("createPathfinder: adjusting realStart from " + realStart + " to playerFeet " + feet);
             realStart = feet;
         }
-        System.out.println("[Baritone] createPathfinder: final realStart=" + realStart + ", goal=" + transformed);
+        logDebug("createPathfinder: final realStart=" + realStart + ", goal=" + transformed);
         return new AStarPathFinder(realStart, start.getX(), start.getY(), start.getZ(), transformed, favoring, context);
 
     }

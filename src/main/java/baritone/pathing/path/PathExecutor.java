@@ -75,6 +75,7 @@ public class PathExecutor implements IPathExecutor, Helper {
     private final IPlayerContext ctx;
 
     private boolean sprintNextTick;
+    private int onTickDepth;
 
     public PathExecutor(PathingBehavior behavior, IPath path) {
         this.behavior = behavior;
@@ -92,6 +93,19 @@ public class PathExecutor implements IPathExecutor, Helper {
      * not sneaking out over lava), false otherwise
      */
     public boolean onTick() {
+        if (onTickDepth > 5) {
+            logDebug("onTick recursion limit reached");
+            return false;
+        }
+        onTickDepth++;
+        try {
+            return onTick0();
+        } finally {
+            onTickDepth--;
+        }
+    }
+
+    private boolean onTick0() {
         if (pathPosition == 0 && ctx.player().tickCount % 5 == 0) {
             logDebug("onTick start: playerFeet=" + ctx.playerFeet() + ", pathSrc=" + path.getSrc() + ", distToSrc=" + String.format("%.3f", Math.sqrt(ctx.playerFeet().distSqr(path.getSrc()))));
         }
@@ -122,7 +136,6 @@ public class PathExecutor implements IPathExecutor, Helper {
                     if (i - pathPosition > 2) {
                         logDebug("Skipping forward " + (i - pathPosition) + " steps, to " + i);
                     }
-                    //System.out.println("Double skip sundae");
                     pathPosition = i - 1;
                     onChangeInPathPosition();
                     onTick();
@@ -302,7 +315,7 @@ public class PathExecutor implements IPathExecutor, Helper {
             // suffocating?
             return false;
         }
-        if (!path.movements().get(pathPosition).safeToCancel()) {
+        if (pathPosition >= path.movements().size() || !path.movements().get(pathPosition).safeToCancel()) {
             return false;
         }
         Optional<IPath> currentBest = current.get().bestPathSoFar();

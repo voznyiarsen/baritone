@@ -26,7 +26,6 @@ import net.minecraft.world.level.dimension.DimensionType;
  */
 public final class BlockStateOctreeInterface {
 
-    private final NetherPathfinderContext context;
     private final long contextPtr;
     private final int minY;
     transient long chunkPtr;
@@ -36,7 +35,6 @@ public final class BlockStateOctreeInterface {
     private int prevChunkZ = Integer.MAX_VALUE;
 
     public BlockStateOctreeInterface(final NetherPathfinderContext context) {
-        this.context = context;
         this.contextPtr = context.context;
         this.minY = context.minY;
     }
@@ -48,7 +46,7 @@ public final class BlockStateOctreeInterface {
         }
         final int chunkX = x >> 4;
         final int chunkZ = z >> 4;
-        if (this.chunkPtr == 0 | ((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
+        if (this.chunkPtr == 0 || ((chunkX ^ this.prevChunkX) | (chunkZ ^ this.prevChunkZ)) != 0) {
             this.prevChunkX = chunkX;
             this.prevChunkZ = chunkZ;
             this.chunkPtr = NetherPathfinder.getChunkOrDefault(this.contextPtr, chunkX, chunkZ, true);

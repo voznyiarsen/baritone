@@ -98,7 +98,12 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (directlyAbove || Baritone.settings().strictLiquidCheck.value) {
                 return true;
             }
-            int level = state.getValue(LiquidBlock.LEVEL);
+            int level;
+            try {
+                level = state.getValue(LiquidBlock.LEVEL);
+            } catch (IllegalArgumentException e) {
+                return true; // property missing (e.g. modded block), conservative fallback
+            }
             if (level == 0) {
                 return true; // source blocks like to flow horizontally
             }
@@ -622,9 +627,14 @@ public interface MovementHelper extends ActionCosts, Helper {
             result += context.breakBlockAdditionalCost;
             result *= mult;
             if (includeFalling) {
-                BlockState above = context.get(x, y + 1, z);
-                if (above.getBlock() instanceof FallingBlock) {
-                    result += getMiningDurationTicks(context, x, y + 1, z, above, true);
+                int currentY = y + 1;
+                while (currentY <= context.world.getMaxY()) {
+                    BlockState above = context.get(x, currentY, z);
+                    if (!(above.getBlock() instanceof FallingBlock)) {
+                        break;
+                    }
+                    result += getMiningDurationTicks(context, x, currentY, z, above, false);
+                    currentY++;
                 }
             }
             return result;

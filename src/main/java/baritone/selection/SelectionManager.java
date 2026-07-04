@@ -49,7 +49,7 @@ public class SelectionManager implements ISelectionManager {
     }
 
     @Override
-    public ISelection[] getSelections() {
+    public synchronized ISelection[] getSelections() {
         return selectionsArr;
     }
 
@@ -63,7 +63,7 @@ public class SelectionManager implements ISelectionManager {
     }
 
     @Override
-    public ISelection getLastSelection() {
+    public synchronized ISelection getLastSelection() {
         return selections.peekLast();
     }
 

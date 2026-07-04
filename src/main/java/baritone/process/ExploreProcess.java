@@ -221,7 +221,9 @@ public final class ExploreProcess extends BaritoneProcessHelper implements IExpl
         private JsonChunkFilter(Path path, boolean invert) throws Exception { // ioexception, json exception, etc
             this.invert = invert;
             Gson gson = new GsonBuilder().create();
-            positions = gson.fromJson(new InputStreamReader(Files.newInputStream(path)), MyChunkPos[].class);
+            try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(path))) {
+                positions = gson.fromJson(reader, MyChunkPos[].class);
+            }
             logDirect("Loaded " + positions.length + " positions");
             inFilter = new LongOpenHashSet();
             for (MyChunkPos mcp : positions) {

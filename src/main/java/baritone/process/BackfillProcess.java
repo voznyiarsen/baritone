@@ -51,7 +51,6 @@ public final class BackfillProcess extends BaritoneProcessHelper {
         }
         if (Baritone.settings().allowParkour.value) {
             logDirect("Backfill cannot be used with allowParkour true");
-            Baritone.settings().backfill.value = false;
             return false;
         }
         for (BlockPos pos : new ArrayList<>(blocksToReplace.keySet())) {
@@ -94,7 +93,7 @@ public final class BackfillProcess extends BaritoneProcessHelper {
         if (!ctx.getSelectedBlock().isPresent() || !baritone.getPathingBehavior().isPathing()) {
             return;
         }
-        blocksToReplace.put(ctx.getSelectedBlock().get(), ctx.world().getBlockState(ctx.getSelectedBlock().get()));
+        blocksToReplace.put(new BlockPos(ctx.getSelectedBlock().get()), ctx.world().getBlockState(ctx.getSelectedBlock().get()));
     }
 
     public List<BlockPos> toFillIn() {

@@ -125,7 +125,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
         // Start with the middle block so the transition doesn't leave the only chunk we can confirm is clear
         final BlockPos middlePos = startChunk.getMiddleBlockPosition(netherMaxHeight+4);
 
-        for(int i = 2; i <= 2; i++) {
+        for(int i = 0; i <= 2; i++) {
             BetterBlockPos next = new BetterBlockPos(
                     (int) (middlePos.getX() + (stepX * i)),
                     netherMaxHeight + (i * 8),

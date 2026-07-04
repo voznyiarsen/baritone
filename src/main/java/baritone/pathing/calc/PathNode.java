@@ -93,21 +93,17 @@ public final class PathNode {
      */
     @Override
     public int hashCode() {
-        return (int) BetterBlockPos.longHash(x, y, z);
+        long h = BetterBlockPos.longHash(x, y, z);
+        return (int)(h ^ (h >>> 32));
     }
 
     @Override
     public boolean equals(Object obj) {
-        // GOTTA GO FAST
-        // ALL THESE CHECKS ARE FOR PEOPLE WHO WANT SLOW CODE
-        // SKRT SKRT
-        //if (obj == null || !(obj instanceof PathNode)) {
-        //    return false;
-        //}
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
 
         final PathNode other = (PathNode) obj;
-        //return Objects.equals(this.pos, other.pos) && Objects.equals(this.goal, other.goal);
-
         return x == other.x && y == other.y && z == other.z;
     }
 }

@@ -34,6 +34,7 @@ public final class UnpackedSegment {
 
     private final Stream<BetterBlockPos> path;
     private final boolean finished;
+    private List<BetterBlockPos> cachedPath;
 
     public UnpackedSegment(Stream<BetterBlockPos> path, boolean finished) {
         this.path = path;
@@ -50,6 +51,9 @@ public final class UnpackedSegment {
     }
 
     public List<BetterBlockPos> collect() {
+        if (this.cachedPath != null) {
+            return this.cachedPath;
+        }
         final List<BetterBlockPos> path = this.path.collect(Collectors.toList());
 
         // Remove backtracks
@@ -67,6 +71,7 @@ public final class UnpackedSegment {
             }
         }
 
+        this.cachedPath = path;
         return path;
     }
 

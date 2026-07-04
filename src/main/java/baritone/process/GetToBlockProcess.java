@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class GetToBlockProcess extends BaritoneProcessHelper implements IGetToBlockProcess {
 
@@ -133,21 +134,18 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
         knownLocations.stream().min(Comparator.comparingDouble(ctx.playerFeet()::distSqr)).ifPresent(newBlacklist::add);
         outer:
         while (true) {
-            for (BlockPos known : knownLocations) {
+            Iterator<BlockPos> knownIter = knownLocations.iterator();
+            while (knownIter.hasNext()) {
+                BlockPos known = knownIter.next();
                 for (BlockPos blacklist : newBlacklist) {
                     if (areAdjacent(known, blacklist)) { // directly adjacent
                         newBlacklist.add(known);
-                        knownLocations.remove(known);
+                        knownIter.remove();
                         continue outer;
                     }
                 }
             }
-            // i can't do break; (codacy gets mad), and i can't do if(true){break}; (codacy gets mad)
-            // so i will do this
-            switch (newBlacklist.size()) {
-                default:
-                    break outer;
-            }
+            break;
         }
         logDebug("Blacklisting unreachable locations " + newBlacklist);
         blacklist.addAll(newBlacklist);
@@ -216,7 +214,6 @@ public final class GetToBlockProcess extends BaritoneProcessHelper implements IG
                 baritone.getLookBehavior().updateTarget(reachable.get(), true);
                 if (knownLocations.contains(ctx.getSelectedBlock().orElse(null))) {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true); // TODO find some way to right click even if we're in an ESC menu
-                    System.out.println(ctx.player().containerMenu);
                     if (!(ctx.player().containerMenu instanceof InventoryMenu)) {
                         return true;
                     }

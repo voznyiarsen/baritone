@@ -101,6 +101,8 @@ public class PathingControlManager implements IPathingControlManager {
         switch (command.commandType) {
             case SET_GOAL_AND_PAUSE:
                 p.secretInternalSetGoalAndPath(command);
+                p.requestPause();
+                break;
             case REQUEST_PAUSE:
                 p.requestPause();
                 break;

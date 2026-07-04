@@ -22,9 +22,13 @@ import com.github.lunatrius.schematica.api.ISchematic;
 
 public class SchematicWorld {
 
-    public final MBlockPos position = (MBlockPos) (Object) "cringe";
+    public final MBlockPos position;
+
+    public SchematicWorld() {
+        throw new LinkageError("Schematica mod is not installed. If you want to use Schematica integration, install the Schematica mod.");
+    }
 
     public ISchematic getSchematic() {
-        throw new LinkageError("LOL");
+        throw new LinkageError("Schematica mod is not installed. If you want to use Schematica integration, install the Schematica mod.");
     }
 }

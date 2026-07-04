@@ -36,7 +36,21 @@ public interface IRenderer {
     TextureManager textureManager = Minecraft.getInstance().getTextureManager();
     Settings settings = BaritoneAPI.getSettings();
 
-    float[] color = new float[]{1.0F, 1.0F, 1.0F, 255.0F};
+    /**
+     * Current line color components: {r, g, b, alpha} where r/g/b are 0.0-1.0 and alpha is 0.0-1.0
+     */
+    float[] color = new float[]{1.0F, 1.0F, 1.0F, 0.4F};
+
+    /**
+     * Packs the current color from {@link #color} into an ARGB int for the Gizmos API.
+     */
+    static int packColor() {
+        int a = (int) (color[3] * 255) & 0xFF;
+        int r = (int) (color[0] * 255) & 0xFF;
+        int g = (int) (color[1] * 255) & 0xFF;
+        int b = (int) (color[2] * 255) & 0xFF;
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
 
     static void glColor(Color color, float alpha) {
         float[] colorComponents = color.getColorComponents(null);
@@ -46,45 +60,39 @@ public interface IRenderer {
         IRenderer.color[3] = alpha;
     }
 
-    static GizmoStyle lineStyle(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
-        int argb = color.getAlpha() << 24 | color.getBlue() << 16 | color.getGreen() << 8 | color.getRed();
-        // Pack alpha into the color
-        int strokeColor = ((int)(alpha * 255) << 24) | (color.getRGB() & 0x00FFFFFF);
-        return GizmoStyle.stroke(strokeColor, lineWidth);
-    }
-
     static void startLines(Color color, float alpha, float lineWidth, boolean ignoreDepth) {
-        // In the new rendering API, lines are drawn per-segment using Gizmos
-        // This method is kept for API compatibility but doesn't do anything
+        glColor(color, alpha);
     }
 
     static void startLines(Color color, float lineWidth, boolean ignoreDepth) {
-        startLines(color, .4f, lineWidth, ignoreDepth);
+        startLines(color, 0.4f, lineWidth, ignoreDepth);
     }
 
     static void endLines(boolean ignoredDepth) {
-        // In the new rendering API, lines are drawn per-segment using Gizmos
-        // This method is kept for API compatibility but doesn't do anything
+        // No-op in the new rendering API
     }
 
     static void emitLine(PoseStack stack,
                          float x1, float y1, float z1,
                          float x2, float y2, float z2,
                          float nx, float ny, float nz) {
-        // Legacy compatibility - actual rendering is done via emitAABB
+        System.out.println("[Baritone] emitLine(" + x1 + "," + y1 + "," + z1 + " -> " + x2 + "," + y2 + "," + z2 + ")");
+        Gizmos.line(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2), packColor());
     }
 
     static void emitLine(PoseStack stack,
                          double x1, double y1, double z1,
                          double x2, double y2, double z2) {
-        emitLine(stack, (float) x1, (float) y1, (float) z1, (float) x2, (float) y2, (float) z2, 0f, 1f, 0f);
+        System.out.println("[Baritone] emitLine(" + x1 + "," + y1 + "," + z1 + " -> " + x2 + "," + y2 + "," + z2 + ")");
+        Gizmos.line(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2), packColor());
     }
 
     static void emitLine(PoseStack stack,
                          double x1, double y1, double z1,
                          double x2, double y2, double z2,
                          double nx, double ny, double nz) {
-        emitLine(stack, (float) x1, (float) y1, (float) z1, (float) x2, (float) y2, (float) z2, (float) nx, (float) ny, (float) nz);
+        System.out.println("[Baritone] emitLine(" + x1 + "," + y1 + "," + z1 + " -> " + x2 + "," + y2 + "," + z2 + ")");
+        Gizmos.line(new Vec3(x1, y1, z1), new Vec3(x2, y2, z2), packColor());
     }
 
     static void emitAABB(PoseStack stack, AABB aabb) {
@@ -93,12 +101,15 @@ public interface IRenderer {
 
     static void emitAABB(PoseStack stack, AABB aabb, double expand) {
         AABB toDraw = aabb.inflate(expand, expand, expand);
-        GizmoStyle style = GizmoStyle.stroke(0xFFFFFFFF, 1.0f);
+        System.out.println("[Baritone] emitAABB(" + toDraw.minX + "," + toDraw.minY + "," + toDraw.minZ + " -> " + toDraw.maxX + "," + toDraw.maxY + "," + toDraw.maxZ + ")");
+        int strokeColor = packColor();
+        GizmoStyle style = GizmoStyle.stroke(strokeColor, 1.0f);
         Gizmos.cuboid(toDraw, style);
     }
 
     static void emitLine(PoseStack stack, Vec3 start, Vec3 end) {
-        Gizmos.line(start, end, 0xFFFFFFFF);
+        System.out.println("[Baritone] emitLine(Vec3 " + start + " -> " + end + ")");
+        Gizmos.line(start, end, packColor());
     }
 
 }
