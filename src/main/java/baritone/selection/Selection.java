@@ -5,7 +5,6 @@ import baritone.api.utils.BetterBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 public class Selection implements ISelection {
 
@@ -38,7 +37,10 @@ public class Selection implements ISelection {
                 max.z - min.z + 1
         );
 
-        this.aabb = new AABB(Vec3.atCenterOf(this.min), Vec3.atCenterOf(this.max.offset(1, 1, 1)));
+        this.aabb = new AABB(
+                this.min.getX(), this.min.getY(), this.min.getZ(),
+                this.max.getX() + 1, this.max.getY() + 1, this.max.getZ() + 1
+        );
     }
 
     @Override
