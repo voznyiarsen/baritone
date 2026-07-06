@@ -38,10 +38,11 @@ public class PlayerMovementInput extends net.minecraft.client.player.ClientInput
         boolean left = handler.isInputForcedDown(Input.MOVE_LEFT);
         boolean right = handler.isInputForcedDown(Input.MOVE_RIGHT);
         boolean sneak = handler.isInputForcedDown(Input.SNEAK);
+        boolean sprint = handler.isInputForcedDown(Input.SPRINT);
 
         // MC 26.1.2 Input record: (forward, backward, left, right, jump, shift, sprint)
         this.keyPresses = new net.minecraft.world.entity.player.Input(
-            forward, back, left, right, jump, sneak, false
+            forward, back, left, right, jump, sneak, sprint
         );
         float forwardImpulse = 0.0F;
         float leftImpulse = 0.0F;
