@@ -48,7 +48,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
 import java.util.*;
@@ -77,7 +76,7 @@ public class SelCommand extends Command {
                 float lineWidth = Baritone.settings().selectionLineWidth.value;
                 boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
                 IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
-                IRenderer.emitAABB(event.getModelViewStack(), new AABB(Vec3.atCenterOf(pos1), Vec3.atCenterOf(pos1.offset(1, 1, 1))));
+                IRenderer.emitAABB(event.getModelViewStack(), new AABB(pos1.x, pos1.y, pos1.z, pos1.x + 1, pos1.y + 1, pos1.z + 1));
                 IRenderer.endLines(ignoreDepth);
             }
         });
