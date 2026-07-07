@@ -22,7 +22,7 @@ import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Tuple;
+import baritone.api.utils.Pair;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -62,7 +62,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      * @param maxPathSize Maximum number of nodes in the returned path
      * @return A tuple containing the path as a list of BetterBlockPos and a boolean indicating if the path is complete
      */
-    public Tuple<List<BetterBlockPos>, Boolean> generateDirectPath(BetterBlockPos start, BetterBlockPos destination, int bufferDistance, int maxPathSize) {
+    public Pair<List<BetterBlockPos>, Boolean> generateDirectPath(BetterBlockPos start, BetterBlockPos destination, int bufferDistance, int maxPathSize) {
         final LinkedList<BetterBlockPos> path = new LinkedList<>();
         final int stepDistance = 32;
 
@@ -80,10 +80,10 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
 
             if(remainingDistanceSq <= bufferDistance * bufferDistance) {
                 // We are within the buffer distance, so we can stop here
-                return new Tuple<>(path, true);
+                return new Pair<>(path, true);
             } else if (remainingDistance <= stepDistance) {
                 path.add(destinationFixed);
-                return new Tuple<>(path, true);
+                return new Pair<>(path, true);
             }
 
             double stepRatio = stepDistance / remainingDistance;
@@ -94,7 +94,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
             path.add(cur);
         }
 
-        return new Tuple<>(path, false);
+        return new Pair<>(path, false);
     }
 
     /**
@@ -103,7 +103,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      * @param destination
      * @return A tuple containing the path that transitions above build limit and a boolean indicating if a transition was found
      */
-    public Tuple<List<BetterBlockPos>,Boolean> generateTransitionUp(BetterBlockPos start, BetterBlockPos destination) {
+    public Pair<List<BetterBlockPos>,Boolean> generateTransitionUp(BetterBlockPos start, BetterBlockPos destination) {
         final double deltaX = destination.getX() - start.getX();
         final double deltaZ = destination.getZ() - start.getZ();
         final double distance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
@@ -117,7 +117,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
         final ChunkPos startChunk = new ChunkPos(start.x >> 4, start.z >> 4);
 
         if(!isSkyClear(startChunk, start.y)) {
-            return new Tuple<>(new LinkedList<>(), false);
+            return new Pair<>(new LinkedList<>(), false);
         }
 
         LinkedList<BetterBlockPos> path = new LinkedList<>();
@@ -134,7 +134,7 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
             path.add(next);
         }
 
-        return new Tuple<>(path, true);
+        return new Pair<>(path, true);
     }
 
     /**
@@ -142,18 +142,18 @@ public class BuildLimitPathFinder implements IElytraPathFinder {
      * @param start
      * @return A tuple containing the path (single point) and a boolean indicating if a transition point was found
      */
-    public Tuple<List<BetterBlockPos>,Boolean> generateTransitionDown(BetterBlockPos start) {
+    public Pair<List<BetterBlockPos>,Boolean> generateTransitionDown(BetterBlockPos start) {
         final int netherMaxHeight = netherCtx.getMaxHeight() + playerCtx.world().getMinY() - 1;
         final ChunkPos startChunk = new ChunkPos(start.x >> 4, start.z >> 4);
 
         LinkedList<BetterBlockPos> path = new LinkedList<>();
 
         if(!isSkyClear(new ChunkPos(start.x >> 4, start.z >> 4), netherMaxHeight-16)) {
-            return new Tuple<>(new LinkedList<>(), false);
+            return new Pair<>(new LinkedList<>(), false);
         }
 
         path.add(new BetterBlockPos(startChunk.getMiddleBlockPosition(netherMaxHeight-8)));
-        return new Tuple<>(path, true);
+        return new Pair<>(path, true);
     }
 
     public boolean isSkyClear(ChunkPos pos, int y) {

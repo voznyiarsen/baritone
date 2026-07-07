@@ -40,6 +40,14 @@ public final class Pair<A, B> {
         return this.b;
     }
 
+    public A getA() {
+        return this.a;
+    }
+
+    public B getB() {
+        return this.b;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

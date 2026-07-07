@@ -46,8 +46,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static net.minecraft.world.level.chunk.LevelChunkSection.SECTION_SIZE;
-
 /**
  * @author Brady
  */
@@ -321,7 +319,7 @@ public final class NetherPathfinderContext implements IElytraPathFinder {
                     else if (bs == Blocks.BROWN_MUSHROOM.defaultBlockState()) brownMushroomId = i;
                 }
                 if (airId == -1 && caveAirId == -1) {
-                    final long bytesInSection = SECTION_SIZE / 8;
+                    final long bytesInSection = 16 / 8;
                     UNSAFE.setMemory(chunkPtr + (y0 * bytesInSection), bytesInSection, (byte) 0xFF);
                     continue;
                 }

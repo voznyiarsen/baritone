@@ -37,7 +37,7 @@ import baritone.utils.accessor.IGuiScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.Tuple;
+import baritone.api.utils.Pair;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -95,14 +95,14 @@ public class ExampleBaritoneControl extends Behavior implements Helper {
             return false;
         } else if (msg.trim().equalsIgnoreCase("orderpizza")) {
             try {
-                ((IGuiScreen) ctx.minecraft().screen).openLinkInvoker(new URI("https://www.dominos.com/en/pages/order/"));
+                ((IGuiScreen) ctx.minecraft().gui.screen()).openLinkInvoker(new URI("https://www.dominos.com/en/pages/order/"));
             } catch (NullPointerException | URISyntaxException ignored) {}
             return false;
         }
         if (msg.isEmpty()) {
             return this.runCommand("help");
         }
-        Tuple<String, List<ICommandArgument>> pair = CommandManager.expand(msg);
+        Pair<String, List<ICommandArgument>> pair = CommandManager.expand(msg);
         String command = pair.getA();
         String rest = msg.substring(pair.getA().length());
         ArgConsumer argc = new ArgConsumer(this.manager, pair.getB());

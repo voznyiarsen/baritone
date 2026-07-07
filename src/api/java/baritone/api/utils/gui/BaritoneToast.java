@@ -83,6 +83,6 @@ public class BaritoneToast implements Toast {
     }
 
     public static void addOrUpdate(Component title, Component subtitle) {
-        addOrUpdate(Minecraft.getInstance().getToastManager(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
+        addOrUpdate(Minecraft.getInstance().gui.toastManager(), title, subtitle, baritone.api.BaritoneAPI.getSettings().toastTimer.value);
     }
 }
