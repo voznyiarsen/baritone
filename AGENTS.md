@@ -1,7 +1,7 @@
 # Baritone Agent Guidelines
 
 ## Project Overview
-Baritone is a Minecraft pathfinding bot. This branch ports it to **Minecraft 26.1.2** (Java 25). The project is a multi-source-set Gradle project using the **Unimined** plugin (not ForgeGradle or Fabric Loom).
+Baritone is a Minecraft pathfinding bot. This branch (`26.1`) ports it to **Minecraft 26.1/26.1.1/26.1.2** (Java 25). Cross-version compatibility is achieved via mod metadata version ranges (no build-system multi-targeting). The project is a multi-source-set Gradle project using the **Unimined** plugin (not ForgeGradle or Fabric Loom).
 
 ## Build & Test
 ```bash
