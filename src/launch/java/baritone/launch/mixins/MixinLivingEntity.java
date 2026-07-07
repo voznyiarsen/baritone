@@ -70,7 +70,7 @@ public abstract class MixinLivingEntity extends Entity {
             method = "jumpFromGround",
             at = @At(
                     value = "INVOKE",
-                    target = "net/minecraft/world/entity/LivingEntity.getYRot()F"
+                    target = "net/minecraft/world/entity/Entity.getYRot()F"
             )
     )
     private float overrideYaw(LivingEntity self) {

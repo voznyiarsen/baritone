@@ -43,7 +43,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinWorldRenderer {
 
     @Inject(
-            method = "renderLevel",
+            method = "render",
             at = @At("RETURN")
     )
     private void onStartHand(GraphicsResourceAllocator allocator, DeltaTracker deltaTracker, boolean renderBlockOutline,
