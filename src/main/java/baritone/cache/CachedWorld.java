@@ -84,21 +84,22 @@ public final class CachedWorld implements ICachedWorld, Helper {
         this.directory = directory.toString();
         this.dimension = dimension;
         System.out.println("Cached world directory: " + directory);
-        Baritone.getExecutor().execute(new PackerThread());
-        Baritone.getExecutor().execute(() -> {
+        Thread packerThread = new Thread(new PackerThread(), "Baritone-PackerThread");
+        packerThread.setDaemon(true);
+        packerThread.start();
+        Thread saveThread = new Thread(() -> {
             try {
                 Thread.sleep(30000);
                 while (true) {
-                    // since a region only saves if it's been modified since its last save
-                    // saving every 10 minutes means that once it's time to exit
-                    // we'll only have a couple regions to save
                     save();
                     Thread.sleep(600000);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        });
+        }, "Baritone-CacheSave");
+        saveThread.setDaemon(true);
+        saveThread.start();
     }
 
     @Override

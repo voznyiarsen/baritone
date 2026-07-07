@@ -299,10 +299,8 @@ public final class PathRenderer implements IRenderer {
             BlockState state = bsi.get0(pos);
             VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
-            // In MC 26.1.2, shape.bounds() returns bounds centered on block center (0.5 offset)
-            // We need to subtract 0.5 to get the correct block-aligned bounds
-            toDraw = toDraw.move(pos.getX() - 0.5, pos.getY() - 0.5, pos.getZ() - 0.5);
-            IRenderer.emitAABB(stack, toDraw, .002D);
+            toDraw = toDraw.move(pos.getX(), pos.getY(), pos.getZ());
+            IRenderer.emitAABB(stack, toDraw, 0.02D);
         });
 
         IRenderer.endLines(settings.renderSelectionBoxesIgnoreDepth.value);
@@ -320,9 +318,9 @@ public final class PathRenderer implements IRenderer {
             BlockState state = bsi.get0(pos);
             VoxelShape shape = state.getShape(player.level(), pos);
             AABB toDraw = shape.isEmpty() ? Shapes.block().bounds() : shape.bounds();
-            toDraw = toDraw.move(pos.getX() - 0.5, pos.getY() - 0.5, pos.getZ() - 0.5);
+            toDraw = toDraw.move(pos.getX(), pos.getY(), pos.getZ());
             // Inflate slightly to avoid z-fighting
-            toDraw = toDraw.inflate(0.002);
+            toDraw = toDraw.inflate(0.02);
             // Draw the 12 edges of the cuboid using lines
             double minX = toDraw.minX, minY = toDraw.minY, minZ = toDraw.minZ;
             double maxX = toDraw.maxX, maxY = toDraw.maxY, maxZ = toDraw.maxZ;
@@ -355,31 +353,27 @@ public final class PathRenderer implements IRenderer {
     }
 
     private static void drawGoal(PoseStack stack, IPlayerContext ctx, Goal goal, float partialTicks, Color color, boolean setupRender) {
-        double renderPosX = posX();
-        double renderPosY = posY();
-        double renderPosZ = posZ();
         double minX, maxX;
         double minZ, maxZ;
         double minY, maxY;
         double y, y1, y2;
         if (!settings.renderGoalAnimated.value) {
-            // y = 1 causes rendering issues when the player is at the same y as the top of a block for some reason
             y = 0.999F;
         } else {
             y = Mth.cos((float) (((float) ((System.nanoTime() / 100000L) % 20000L)) / 20000F * Math.PI * 2));
         }
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
-            minX = goalPos.getX() + 0.002 - renderPosX;
-            maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
-            minZ = goalPos.getZ() + 0.002 - renderPosZ;
-            maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
+            minX = goalPos.getX() - 0.02;
+            maxX = goalPos.getX() + 1 + 0.02;
+            minZ = goalPos.getZ() - 0.02;
+            maxZ = goalPos.getZ() + 1 + 0.02;
             if (goal instanceof GoalGetToBlock || goal instanceof GoalTwoBlocks) {
                 y /= 2;
             }
-            y1 = 1 + y + goalPos.getY() - renderPosY;
-            y2 = 1 - y + goalPos.getY() - renderPosY;
-            minY = goalPos.getY() - renderPosY;
+            y1 = 1 + y + goalPos.getY();
+            y2 = 1 - y + goalPos.getY();
+            minY = goalPos.getY();
             maxY = minY + 2;
             if (goal instanceof GoalGetToBlock || goal instanceof GoalTwoBlocks) {
                 y1 -= 0.5;
@@ -392,21 +386,15 @@ public final class PathRenderer implements IRenderer {
             minY = ctx.world().getMinY();
             maxY = ctx.world().getMaxY();
 
-            // Beacon beam rendering disabled for MC 26.1.2+ (API removed)
-            // Fall through to box rendering below
-
-            minX = goalPos.getX() + 0.002 - renderPosX;
-            maxX = goalPos.getX() + 1 - 0.002 - renderPosX;
-            minZ = goalPos.getZ() + 0.002 - renderPosZ;
-            maxZ = goalPos.getZ() + 1 - 0.002 - renderPosZ;
+            minX = goalPos.getX() - 0.02;
+            maxX = goalPos.getX() + 1 + 0.02;
+            minZ = goalPos.getZ() - 0.02;
+            maxZ = goalPos.getZ() + 1 + 0.02;
 
             y1 = 0;
             y2 = 0;
-            minY -= renderPosY;
-            maxY -= renderPosY;
             drawDankLitGoalBox(stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         } else if (goal instanceof GoalComposite) {
-            // Simple way to determine if goals can be batched, without having some sort of GoalRenderer
             boolean batch = Arrays.stream(((GoalComposite) goal).goals()).allMatch(IGoalRenderPos.class::isInstance);
 
             if (batch) {
@@ -422,14 +410,14 @@ public final class PathRenderer implements IRenderer {
             drawGoal(stack, ctx, ((GoalInverted) goal).origin, partialTicks, settings.colorInvertedGoalBox.value);
         } else if (goal instanceof GoalYLevel) {
             GoalYLevel goalpos = (GoalYLevel) goal;
-            minX = ctx.player().position().x - settings.yLevelBoxSize.value - renderPosX;
-            minZ = ctx.player().position().z - settings.yLevelBoxSize.value - renderPosZ;
-            maxX = ctx.player().position().x + settings.yLevelBoxSize.value - renderPosX;
-            maxZ = ctx.player().position().z + settings.yLevelBoxSize.value - renderPosZ;
-            minY = ((GoalYLevel) goal).level - renderPosY;
+            minX = ctx.player().position().x - settings.yLevelBoxSize.value;
+            minZ = ctx.player().position().z - settings.yLevelBoxSize.value;
+            maxX = ctx.player().position().x + settings.yLevelBoxSize.value;
+            maxZ = ctx.player().position().z + settings.yLevelBoxSize.value;
+            minY = ((GoalYLevel) goal).level;
             maxY = minY + 2;
-            y1 = 1 + y + goalpos.level - renderPosY;
-            y2 = 1 - y + goalpos.level - renderPosY;
+            y1 = 1 + y + goalpos.level;
+            y2 = 1 - y + goalpos.level;
             drawDankLitGoalBox(stack, color, minX, maxX, minZ, maxZ, minY, maxY, y1, y2, setupRender);
         }
     }
@@ -449,10 +437,10 @@ public final class PathRenderer implements IRenderer {
         }
         if (goal instanceof IGoalRenderPos) {
             BlockPos goalPos = ((IGoalRenderPos) goal).getGoalPos();
-            minX = goalPos.getX() + 0.002;
-            maxX = goalPos.getX() + 1 - 0.002;
-            minZ = goalPos.getZ() + 0.002;
-            maxZ = goalPos.getZ() + 1 - 0.002;
+            minX = goalPos.getX() - 0.02;
+            maxX = goalPos.getX() + 1 + 0.02;
+            minZ = goalPos.getZ() - 0.02;
+            maxZ = goalPos.getZ() + 1 + 0.02;
             if (goal instanceof GoalGetToBlock || goal instanceof GoalTwoBlocks) {
                 y /= 2;
             }
@@ -471,10 +459,10 @@ public final class PathRenderer implements IRenderer {
             minY = ctx.world().getMinY();
             maxY = ctx.world().getMaxY();
 
-            minX = goalPos.getX() + 0.002;
-            maxX = goalPos.getX() + 1 - 0.002;
-            minZ = goalPos.getZ() + 0.002;
-            maxZ = goalPos.getZ() + 1 - 0.002;
+            minX = goalPos.getX() - 0.02;
+            maxX = goalPos.getX() + 1 + 0.02;
+            minZ = goalPos.getZ() - 0.02;
+            maxZ = goalPos.getZ() + 1 + 0.02;
 
             y1 = 0;
             y2 = 0;

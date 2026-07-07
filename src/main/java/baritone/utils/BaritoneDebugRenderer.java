@@ -23,14 +23,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.util.debug.DebugValueAccess;
 
-/**
- * A DebugRenderer that draws Baritone's path visualization using the Gizmos API.
- * This is called by DebugRenderer.emitGizmos() during the render pass when the
- * Gizmos.withCollector() scope is active.
- *
- * @author Brady
- * @since 6/28/2026
- */
 public class BaritoneDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
     public static final BaritoneDebugRenderer INSTANCE = new BaritoneDebugRenderer();
@@ -42,9 +34,6 @@ public class BaritoneDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
         for (baritone.api.IBaritone ibaritone : BaritoneAPI.getProvider().getAllBaritones()) {
             PathingBehavior behavior = (PathingBehavior) ibaritone.getPathingBehavior();
             if (behavior != null && behavior.ctx != null && behavior.ctx.world() != null) {
-                if (behavior.getGoal() == null && behavior.getCurrent() == null && behavior.getNext() == null && !behavior.getInProgress().isPresent()) {
-                    continue;
-                }
                 PathRenderer.render(cameraX, cameraY, cameraZ, behavior, partialTicks);
             }
         }

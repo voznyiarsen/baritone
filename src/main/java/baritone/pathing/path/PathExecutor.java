@@ -376,9 +376,6 @@ public class PathExecutor implements IPathExecutor, Helper {
     private boolean shouldSprintNextTick() {
         boolean requested = behavior.baritone.getInputOverrideHandler().isInputForcedDown(Input.SPRINT);
 
-        // we'll take it from here, no need for minecraft to see we're holding down control and sprint for us
-        behavior.baritone.getInputOverrideHandler().setInputForceState(Input.SPRINT, false);
-
         // first and foremost, if allowSprint is off, or if we don't have enough hunger, don't try and sprint
         if (!new CalculationContext(behavior.baritone, false).canSprint) {
             return false;

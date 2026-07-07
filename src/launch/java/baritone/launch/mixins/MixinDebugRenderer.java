@@ -18,9 +18,7 @@
 package baritone.launch.mixins;
 
 import baritone.utils.BaritoneDebugRenderer;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
-import net.minecraft.util.debug.DebugValueAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,10 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-/**
- * Registers the BaritoneDebugRenderer with the DebugRenderer and ensures
- * it is called every frame during rendering.
- */
 @Mixin(DebugRenderer.class)
 public class MixinDebugRenderer {
 
@@ -47,18 +41,5 @@ public class MixinDebugRenderer {
         if (!this.renderers.contains(BaritoneDebugRenderer.INSTANCE)) {
             this.renderers.add(BaritoneDebugRenderer.INSTANCE);
         }
-    }
-
-    @Inject(
-            method = "emitGizmos",
-            at = @At("RETURN")
-    )
-    private void onEmitGizmos(Frustum frustum, double cameraX, double cameraY, double cameraZ, float partialTicks, CallbackInfo ci) {
-        net.minecraft.client.multiplayer.ClientPacketListener connection = net.minecraft.client.Minecraft.getInstance().getConnection();
-        if (connection == null) {
-            return;
-        }
-        DebugValueAccess debugValueAccess = connection.createDebugValueAccess();
-        BaritoneDebugRenderer.INSTANCE.emitGizmos(cameraX, cameraY, cameraZ, debugValueAccess, frustum, partialTicks);
     }
 }

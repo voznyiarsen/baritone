@@ -101,6 +101,10 @@ public abstract class AbstractNodeCostSearch implements IPathFinder, Helper {
         if (isFinished) {
             throw new IllegalStateException("Path finder cannot be reused!");
         }
+        if (cancelRequested) {
+            isFinished = true;
+            return new PathCalculationResult(PathCalculationResult.Type.CANCELLATION);
+        }
         cancelRequested = false;
         try {
             IPath path = calculate0(primaryTimeout, failureTimeout).map(IPath::postProcess).orElse(null);
